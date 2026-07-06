@@ -1,0 +1,35 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { GeminiProvider, ChatMessage } from '@/lib/ai/adapter';
+
+const apiKey = process.env.GEMINI_API_KEY;
+
+export async function POST(req: NextRequest) {
+  try {
+    if (!apiKey) {
+      return NextResponse.json({ error: 'GEMINI_API_KEY is not configured' }, { status: 500 });
+    }
+
+    const body = await req.json();
+    const { message, history } = body as { message: string, history: ChatMessage[] };
+
+    if (!message) {
+      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
+    }
+
+    const provider = new GeminiProvider(apiKey);
+    const stream = await provider.generateTeacherResponse(message, history || []);
+
+    // Return the stream directly for SSE / Streaming consumption
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    });
+
+  } catch (error: any) {
+    console.error('Chat API Error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to process chat' }, { status: 500 });
+  }
+}

@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model QuestionSet {
+  id        String     @id @default(uuid())
+  name      String
+  questions Question[]
+  sessions  Session[]
+  createdAt DateTime   @default(now())
+}
+
+model Question {
+  id        String      @id @default(uuid())
+  content   String      
+  order     Int         
+  setId     String
+  set       QuestionSet @relation(fields: [setId], references: [id], onDelete: Cascade)
+}
+
+model Session {
+  id              String          @id @default(uuid())
+  questionSetId   String?         
+  questionSetName String          
+  date            DateTime        @default(now())
+  results         SessionResult[]
+  set             QuestionSet?    @relation(fields: [questionSetId], references: [id], onDelete: SetNull)
+}
+
+model SessionResult {
+  id         String  @id @default(uuid())
+  sessionId  String
+  session    Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question   String  
+  userAnswer String  
+  feedback   String  
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  decks     Deck[]
+  createdAt DateTime @default(now())
+}
+
+model Deck {
+  id          String      @id @default(uuid())
+  userId      String
+  name        String
+  description String?
+  cards       Flashcard[]
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime    @default(now())
+}
+
+model Flashcard {
+  id             String    @id @default(uuid())
+  deckId         String
+  front          String    
+  back           String    
+  deck           Deck      @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  
+  status         String    @default("NEW")
+  stepIndex      Int       @default(0)
+  interval       Int       @default(0)     
+  repetition     Int       @default(0)     
+  easinessFactor Float     @default(2.5)   
+  nextReviewDate DateTime  @default(now()) 
+  
+  createdAt      DateTime  @default(now())
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String
+  activity  String   // FLASHCARD | FREE_CHAT | INTERVIEW
+  duration  Int      // Active duration in seconds
+  createdAt DateTime @default(now())
+  
+  @@index([userId, createdAt])
+}
