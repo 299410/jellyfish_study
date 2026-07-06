@@ -84,7 +84,7 @@ export default function LandingPage() {
                 {/* AI Message */}
                 <div className="flex gap-4 animate-in slide-in-from-left-4 fade-in duration-700 delay-[900ms] fill-mode-both">
                   <div className="w-14 h-14 rounded-full bg-white p-0.5 flex-shrink-0 shadow-md border border-indigo-50 relative">
-                    <Image src="/logo-clean-v2.png" alt="AI" layout="fill" objectFit="contain" className="p-0.5" />
+                    <Image src="/logo-clean-v2.png" alt="AI" layout="fill" objectFit="contain" className="p-0.5" unoptimized />
                     <div className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-400 border-2 border-white rounded-full"></div>
                   </div>
                   <div className="bg-white border border-slate-100 text-slate-700 px-6 py-5 rounded-3xl rounded-tl-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] max-w-[85%]">
@@ -100,7 +100,7 @@ export default function LandingPage() {
 
             {/* Floating Mascot */}
             <div className="absolute -top-24 -right-16 md:-right-24 w-56 h-56 md:w-64 md:h-64 animate-float drop-shadow-[0_20px_30px_rgba(99,102,241,0.4)] hidden md:block z-20 hover:scale-110 transition-transform duration-500 cursor-pointer">
-              <Image src="/logo-clean-v2.png" alt="Mascot" layout="fill" objectFit="contain" />
+              <Image src="/logo-clean-v2.png" alt="Mascot" layout="fill" objectFit="contain" unoptimized />
             </div>
 
             {/* Floating Badges */}

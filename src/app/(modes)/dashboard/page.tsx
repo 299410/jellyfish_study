@@ -179,7 +179,7 @@ export default function DashboardPage() {
         {/* Welcome Section with Official Logo Image */}
         <div className="flex items-center gap-4 relative">
           <div className="relative w-14 h-14 shrink-0 animate-float drop-shadow-[0_8px_16px_rgba(34,211,238,0.3)]">
-            <Image src="/logo-clean-v2.png" alt="JellyFish Mascot" layout="fill" objectFit="contain" priority />
+            <Image src="/logo-clean-v2.png" alt="JellyFish Mascot" layout="fill" objectFit="contain" priority unoptimized />
           </div>
           <div>
             <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight flex items-center gap-2">

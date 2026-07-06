@@ -21,7 +21,7 @@ export function Sidebar() {
       <div className="w-full px-4 md:px-6 mb-10 flex justify-center md:justify-start items-center gap-3">
         <div className="relative w-12 h-12 md:w-16 md:h-16 flex items-center justify-center shrink-0">
           <div className="absolute inset-0 bg-cyan-400 blur-2xl opacity-40 rounded-full animate-pulse" />
-          <Image src="/logo-clean-v2.png" alt="JellyFish Mascot" width={64} height={64} className="relative z-10 hover:scale-110 transition-transform duration-500 drop-shadow-[0_4px_10px_rgba(34,211,238,0.5)]" priority />
+          <Image src="/logo-clean-v2.png" alt="JellyFish Mascot" width={64} height={64} className="relative z-10 hover:scale-110 transition-transform duration-500 drop-shadow-[0_4px_10px_rgba(34,211,238,0.5)]" priority unoptimized />
         </div>
         <span className="hidden md:block font-black text-2xl bg-gradient-to-r from-indigo-600 to-cyan-500 bg-clip-text text-transparent tracking-tight">JellyFish</span>
       </div>

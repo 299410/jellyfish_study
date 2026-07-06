@@ -60,6 +60,7 @@ export default function OnboardingModal({ isOpen, onClose, onSuccess }: Onboardi
             width={72} 
             height={72} 
             className="relative z-10 drop-shadow-[0_4px_10px_rgba(34,211,238,0.4)]" 
+            unoptimized
           />
         </div>
 
