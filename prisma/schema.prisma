@@ -43,30 +43,33 @@ model SessionResult {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  decks     Deck[]
-  createdAt DateTime @default(now())
+  id            String         @id @default(uuid())
+  name          String
+  decks         Deck[]
+  studySessions StudySession[]
+  createdAt     DateTime       @default(now())
 }
 
 model Deck {
-  id                String      @id @default(uuid())
+  id                String         @id @default(uuid())
   userId            String
   name              String
   description       String?
-  maxNewCardsPerDay Int         @default(20)
-  maxReviewsPerDay  Int         @default(200)
+  maxNewCardsPerDay Int            @default(20)
+  maxReviewsPerDay  Int            @default(200)
   cards             Flashcard[]
-  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt         DateTime    @default(now())
+  studySessions     StudySession[]
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime       @default(now())
 }
 
 model Flashcard {
-  id             String    @id @default(uuid())
-  deckId         String
-  front          String    
-  back           String    
-  deck           Deck      @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  id                String             @id @default(uuid())
+  deckId            String
+  front             String    
+  back              String    
+  deck              Deck               @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  studySessionCards StudySessionCard[]
   
   status         String    @default("NEW")
   stepIndex      Int       @default(0)
@@ -98,3 +101,32 @@ model ActivityLog {
   
   @@index([userId, createdAt])
 }
+
+model StudySession {
+  id            String             @id @default(uuid())
+  userId        String
+  deckId        String
+  currentIndex  Int                @default(0)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  cards         StudySessionCard[]
+
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deck          Deck               @relation(fields: [deckId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, deckId])
+}
+
+model StudySessionCard {
+  id             String       @id @default(uuid())
+  sessionId      String
+  cardId         String
+  dueAt          DateTime?    // NULL = Active in Queue; NOT NULL = In Waiting Pool (waiting for timestamp)
+  orderIndex     Int
+
+  session        StudySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  card           Flashcard    @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, orderIndex])
+}
+

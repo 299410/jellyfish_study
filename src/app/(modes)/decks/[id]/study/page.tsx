@@ -11,7 +11,7 @@ export default async function StudyPage(props: { params: Promise<{ id: string }>
     notFound();
   }
 
-  const dueCards = await getDueCards(params.id);
+  const { queue, waitingPool } = await getDueCards(params.id, deck.userId);
 
   return (
     <div className="min-h-screen bg-[#FAFAFC] pt-12 pb-24 px-6 relative">
@@ -20,10 +20,10 @@ export default async function StudyPage(props: { params: Promise<{ id: string }>
       <div className="max-w-4xl mx-auto relative z-10">
         <div className="mb-12 text-center">
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">{deck.name}</h1>
-          <p className="text-slate-500 font-medium mt-2">Study Session • {dueCards.length} cards due</p>
+          <p className="text-slate-500 font-medium mt-2">Study Session • {queue.length} cards due</p>
         </div>
         
-        <FlashcardStudy cards={dueCards} deckId={deck.id} />
+        <FlashcardStudy initialQueue={queue} initialWaitingPool={waitingPool} deckId={deck.id} />
       </div>
     </div>
   );
