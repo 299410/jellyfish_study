@@ -5,6 +5,7 @@ import { deleteCard } from "@/app/actions/flashcard";
 import { Button } from "@/components/ui/button";
 import CardEditorDialog from "./CardEditorDialog";
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 
 type Flashcard = {
   id: string;
@@ -32,6 +33,8 @@ export default function CardTable({
   const [editingCard, setEditingCard] = useState<Flashcard | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const handleEdit = (card: Flashcard) => {
     setEditingCard(card);
@@ -47,12 +50,10 @@ export default function CardTable({
     if (autoAddCard) {
       handleAddNew();
       
-      // Clean up URL parameter to avoid reopening modal on refresh
-      const url = new URL(window.location.href);
-      url.searchParams.delete('addCard');
-      window.history.replaceState({}, '', url.toString());
+      // Clean up URL parameter using Next.js router to sync router state
+      router.replace(pathname, { scroll: false });
     }
-  }, [autoAddCard]);
+  }, [autoAddCard, pathname, router]);
 
   const handleDelete = (id: string) => {
     if (confirm("Are you sure you want to permanently delete this card?")) {
