@@ -153,14 +153,14 @@ export function QuestionSetList({ onStartSession }: Props) {
                       <p className="font-medium text-slate-900 text-lg group-hover:text-black">{set.name}</p>
                       <p className="text-sm text-slate-500 mt-1">{set.questions.length} questions</p>
                     </div>
-                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button variant="ghost" size="icon" className="h-10 w-10 text-slate-500 hover:bg-slate-100 hover:text-slate-900 rounded-full" onClick={(e) => startEditSet(set, e)}>
+                    <div className="flex items-center gap-2 transition-all">
+                      <Button variant="ghost" size="icon" className="h-10 w-10 text-slate-500 hover:bg-slate-100 hover:text-slate-900 rounded-full cursor-pointer" onClick={(e) => startEditSet(set, e)} title="Sửa bộ câu hỏi">
                         <Pencil className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-10 w-10 text-red-400 hover:bg-red-50 hover:text-red-600 rounded-full" onClick={(e) => deleteSet(set.id, e)}>
+                      <Button variant="ghost" size="icon" className="h-10 w-10 text-rose-500 hover:bg-rose-50 hover:text-rose-600 rounded-full cursor-pointer" onClick={(e) => deleteSet(set.id, e)} title="Xóa bộ câu hỏi">
                         <Trash2 className="w-4 h-4" />
                       </Button>
-                      <Button className="bg-slate-900 hover:bg-indigo-600 text-white rounded-full px-6 ml-2 font-semibold shadow-md group-hover:scale-105 transition-transform">Start</Button>
+                      <Button className="bg-slate-900 hover:bg-indigo-600 text-white rounded-full px-6 ml-2 font-semibold shadow-md hover:scale-105 transition-transform cursor-pointer">Bắt đầu</Button>
                     </div>
                   </div>
                 )}
