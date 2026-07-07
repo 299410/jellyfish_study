@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { getDecks } from "@/app/actions/deck";
 import ImportCsvDialog from "./_components/ImportCsvDialog";
 import DeckEditorDialog from "./_components/DeckEditorDialog";
@@ -17,6 +18,7 @@ type DeckWithCount = {
 };
 
 export default function DecksPage() {
+  const router = useRouter();
   const userId = useUserId();
   const [decks, setDecks] = useState<DeckWithCount[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -64,7 +66,7 @@ export default function DecksPage() {
           <div className="flex gap-3">
             <Button 
               onClick={() => setIsCreateOpen(true)}
-              className="rounded-full px-6 h-12 bg-slate-900 hover:bg-indigo-600 text-white font-bold shadow-md hover:shadow-xl transition-all cursor-pointer"
+              className="rounded-full px-6 h-12 bg-slate-900 hover:bg-indigo-600 text-white font-bold shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
             >
               + Create Deck
             </Button>
@@ -117,9 +119,13 @@ export default function DecksPage() {
       <DeckEditorDialog 
         userId={userId!}
         isOpen={isCreateOpen}
-        onClose={() => {
+        onClose={(newDeckId) => {
           setIsCreateOpen(false);
-          refreshDecks();
+          if (newDeckId) {
+            router.push(`/decks/${newDeckId}?addCard=true`);
+          } else {
+            refreshDecks();
+          }
         }}
       />
     </div>

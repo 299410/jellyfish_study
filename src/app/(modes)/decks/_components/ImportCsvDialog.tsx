@@ -85,7 +85,7 @@ export default function ImportCsvDialog({ decks, userId, onImported }: { decks: 
     <>
       <Button 
         onClick={() => setIsOpen(true)}
-        className="rounded-full bg-slate-900 text-white font-bold hover:bg-slate-800 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
+        className="rounded-full px-6 h-12 bg-slate-900 hover:bg-indigo-600 text-white font-bold shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
       >
         Import CSV / TXT
       </Button>

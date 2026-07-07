@@ -21,7 +21,7 @@ export default function DeckEditorDialog({
   deck?: Deck | null; 
   userId?: string;
   isOpen: boolean; 
-  onClose: () => void;
+  onClose: (newDeckId?: string) => void;
 }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -41,10 +41,11 @@ export default function DeckEditorDialog({
     startTransition(async () => {
       if (deck) {
         await updateDeck(deck.id, name, description);
+        onClose();
       } else if (userId) {
-        await createDeck(userId, name, description);
+        const newDeck = await createDeck(userId, name, description);
+        onClose(newDeck.id);
       }
-      onClose();
     });
   };
 
@@ -83,7 +84,7 @@ export default function DeckEditorDialog({
         <div className="flex justify-end space-x-3 pt-4 border-t border-slate-100">
           <Button 
             variant="outline" 
-            onClick={onClose} 
+            onClick={() => onClose()} 
             disabled={isPending}
             className="rounded-full px-6 font-bold text-slate-500 hover:text-slate-700"
           >
