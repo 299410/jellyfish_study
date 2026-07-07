@@ -78,16 +78,16 @@ export default function DecksPage() {
           {decks.map((deck) => (
             <div key={deck.id} className="relative group border border-slate-100/80 bg-white/60 backdrop-blur-xl rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500 hover:-translate-y-2 overflow-hidden flex flex-col cursor-pointer">
               {/* Card Link Overlay */}
-              <Link href={`/decks/${deck.id}`} className="absolute inset-0 z-10" />
+              <Link href={`/decks/${deck.id}`} className="absolute inset-0 z-20" />
               
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-50/50 to-transparent rounded-bl-full -z-10 group-hover:scale-150 transition-transform duration-700"></div>
               
-              <h2 className="text-2xl font-bold text-slate-900 mb-3 tracking-tight relative z-20">{deck.name}</h2>
-              <p className="text-slate-500 font-medium h-12 overflow-hidden text-sm mb-6 relative z-20">
+              <h2 className="text-2xl font-bold text-slate-900 mb-3 tracking-tight relative z-10">{deck.name}</h2>
+              <p className="text-slate-500 font-medium h-12 overflow-hidden text-sm mb-6 relative z-10">
                 {deck.description || "No description provided."}
               </p>
               
-              <div className="flex justify-between items-center mt-auto pt-6 border-t border-slate-100/80 relative z-20">
+              <div className="flex justify-between items-center mt-auto pt-6 border-t border-slate-100/80 relative z-10">
                 <div className="text-sm">
                   <span className="font-bold text-slate-700">{deck._count.cards}</span> <span className="text-slate-500">cards</span>
                   {deck.dueCount > 0 && (

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { calculateAnkiReview, getButtonHints as calcButtonHints, type ReviewAction, type CardState, type ButtonHints } from "@/lib/srs";
 import { prisma } from "@/lib/db/prisma";
+import { Prisma } from "@prisma/client";
 
 export async function getDueCards(deckId: string) {
   const now = new Date();
@@ -199,6 +200,10 @@ export async function getDeckStats(deckId: string) {
   const remainingNew = Math.max(0, Math.min(totalNewInDeck, deck.maxNewCardsPerDay - newStudiedToday));
   const remainingReviews = Math.max(0, Math.min(totalDueReviewsInDeck, deck.maxReviewsPerDay - reviewsStudiedToday));
 
+  const totalNew = totalNewInDeck;
+  const totalLearning = cards.filter(c => c.status === "LEARNING" || c.status === "RELEARNING").length;
+  const totalDue = cards.filter(c => c.nextReviewDate <= now).length;
+
   return {
     newStudiedToday,
     maxNewCardsPerDay: deck.maxNewCardsPerDay,
@@ -207,21 +212,48 @@ export async function getDeckStats(deckId: string) {
     reviewsStudiedToday,
     maxReviewsPerDay: deck.maxReviewsPerDay,
     remainingReviews,
-    totalCards: cards.length
+    totalCards: cards.length,
+    totalNew,
+    totalLearning,
+    totalDue
   };
 }
 
-export async function getDeckCards(deckId: string, page = 1, pageSize = 100) {
+export async function getDeckCards(
+  deckId: string, 
+  page = 1, 
+  pageSize = 100, 
+  search = "", 
+  status = "ALL"
+) {
   const skip = (page - 1) * pageSize;
+  const now = new Date();
   
+  const where: Prisma.FlashcardWhereInput = { deckId };
+  
+  if (search) {
+    where.OR = [
+      { front: { contains: search, mode: "insensitive" } },
+      { back: { contains: search, mode: "insensitive" } }
+    ];
+  }
+  
+  if (status === "NEW") {
+    where.status = "NEW";
+  } else if (status === "LEARNING") {
+    where.status = { in: ["LEARNING", "RELEARNING"] };
+  } else if (status === "DUE") {
+    where.nextReviewDate = { lte: now };
+  }
+
   const [cards, total] = await Promise.all([
     prisma.flashcard.findMany({
-      where: { deckId },
+      where,
       orderBy: { createdAt: 'desc' },
       skip,
       take: pageSize,
     }),
-    prisma.flashcard.count({ where: { deckId } })
+    prisma.flashcard.count({ where })
   ]);
 
   return { cards, total, totalPages: Math.ceil(total / pageSize) };
