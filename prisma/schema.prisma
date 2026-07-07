@@ -49,13 +49,15 @@ model User {
 }
 
 model Deck {
-  id          String      @id @default(uuid())
-  userId      String
-  name        String
-  description String?
-  cards       Flashcard[]
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime    @default(now())
+  id                String      @id @default(uuid())
+  userId            String
+  name              String
+  description       String?
+  maxNewCardsPerDay Int         @default(20)
+  maxReviewsPerDay  Int         @default(200)
+  cards             Flashcard[]
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime    @default(now())
 }
 
 model Flashcard {
@@ -73,6 +75,17 @@ model Flashcard {
   nextReviewDate DateTime  @default(now()) 
   
   createdAt      DateTime  @default(now())
+}
+
+model CardReviewLog {
+  id         String   @id @default(uuid())
+  cardId     String
+  deckId     String
+  status     String   // NEW | LEARNING | REVIEW | RELEARNING
+  action     String   // again | hard | good | easy
+  createdAt  DateTime @default(now())
+
+  @@index([deckId, createdAt])
 }
 
 model ActivityLog {

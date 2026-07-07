@@ -90,8 +90,10 @@ function reviewNew(card: CardState, action: ReviewAction): ReviewResult {
     case "good":
       return makeResult("LEARNING", 1, 0, 0, ef, addMinutes(CONFIG.learningSteps[1] ?? CONFIG.learningSteps[0]));
 
-    case "easy":
-      return makeResult("REVIEW", 0, CONFIG.easyInterval, 1, ef, addDays(CONFIG.easyInterval));
+    case "easy": {
+      const fuzzed = applyFuzz(CONFIG.easyInterval);
+      return makeResult("REVIEW", 0, fuzzed, 1, ef, addDays(fuzzed));
+    }
   }
 }
 
@@ -114,15 +116,18 @@ function reviewLearning(card: CardState, action: ReviewAction): ReviewResult {
       const nextStep = card.stepIndex + 1;
       if (nextStep >= steps.length) {
         // Graduate! → REVIEW
-        return makeResult("REVIEW", 0, CONFIG.graduatingInterval, 1, ef, addDays(CONFIG.graduatingInterval));
+        const fuzzed = applyFuzz(CONFIG.graduatingInterval);
+        return makeResult("REVIEW", 0, fuzzed, 1, ef, addDays(fuzzed));
       }
       // Move to next step
       return makeResult("LEARNING", nextStep, 0, 0, ef, addMinutes(steps[nextStep]));
     }
 
-    case "easy":
+    case "easy": {
       // Skip all steps, graduate immediately
-      return makeResult("REVIEW", 0, CONFIG.easyInterval, 1, ef, addDays(CONFIG.easyInterval));
+      const fuzzed = applyFuzz(CONFIG.easyInterval);
+      return makeResult("REVIEW", 0, fuzzed, 1, ef, addDays(fuzzed));
+    }
   }
 }
 
@@ -143,18 +148,21 @@ function reviewReview(card: CardState, action: ReviewAction): ReviewResult {
     case "hard": {
       ef = Math.max(CONFIG.minimumEase, ef + CONFIG.easeHardDelta);
       const newInterval = Math.max(oldInterval + 1, Math.round(oldInterval * CONFIG.hardIntervalMultiplier));
-      return makeResult("REVIEW", 0, newInterval, card.repetition + 1, ef, addDays(newInterval));
+      const fuzzed = applyFuzz(newInterval);
+      return makeResult("REVIEW", 0, fuzzed, card.repetition + 1, ef, addDays(fuzzed));
     }
 
     case "good": {
       const newInterval = Math.max(oldInterval + 1, Math.round(oldInterval * ef));
-      return makeResult("REVIEW", 0, newInterval, card.repetition + 1, ef, addDays(newInterval));
+      const fuzzed = applyFuzz(newInterval);
+      return makeResult("REVIEW", 0, fuzzed, card.repetition + 1, ef, addDays(fuzzed));
     }
 
     case "easy": {
       ef = Math.min(5.0, ef + CONFIG.easeEasyDelta);
       const newInterval = Math.max(oldInterval + 1, Math.round(oldInterval * ef * CONFIG.easyBonus));
-      return makeResult("REVIEW", 0, newInterval, card.repetition + 1, ef, addDays(newInterval));
+      const fuzzed = applyFuzz(newInterval);
+      return makeResult("REVIEW", 0, fuzzed, card.repetition + 1, ef, addDays(fuzzed));
     }
   }
 }
@@ -178,14 +186,17 @@ function reviewRelearning(card: CardState, action: ReviewAction): ReviewResult {
       const nextStep = card.stepIndex + 1;
       if (nextStep >= steps.length) {
         // Back to REVIEW with the (already reduced) interval
-        return makeResult("REVIEW", 0, card.interval, card.repetition + 1, ef, addDays(card.interval));
+        const fuzzed = applyFuzz(card.interval);
+        return makeResult("REVIEW", 0, fuzzed, card.repetition + 1, ef, addDays(fuzzed));
       }
       return makeResult("RELEARNING", nextStep, card.interval, 0, ef, addMinutes(steps[nextStep]));
     }
 
-    case "easy":
+    case "easy": {
       // Back to REVIEW immediately
-      return makeResult("REVIEW", 0, card.interval, card.repetition + 1, ef, addDays(card.interval));
+      const fuzzed = applyFuzz(card.interval);
+      return makeResult("REVIEW", 0, fuzzed, card.repetition + 1, ef, addDays(fuzzed));
+    }
   }
 }
 
@@ -236,6 +247,23 @@ export function getButtonHints(card: CardState): ButtonHints {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────
+
+export function applyFuzz(interval: number): number {
+  if (interval < 2) return interval;
+  
+  let fuzzRange = 0;
+  if (interval < 7) {
+    fuzzRange = 1; // +/- 1 day
+  } else if (interval < 30) {
+    fuzzRange = Math.round(interval * 0.1); // +/- 10%
+  } else {
+    fuzzRange = Math.round(interval * 0.15); // +/- 15%
+  }
+
+  // Generate random integer in [-fuzzRange, fuzzRange]
+  const randomDelta = Math.floor(Math.random() * (fuzzRange * 2 + 1)) - fuzzRange;
+  return Math.max(1, interval + randomDelta);
+}
 
 function makeResult(
   status: CardStatus,

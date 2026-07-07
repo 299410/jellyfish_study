@@ -10,6 +10,8 @@ type Deck = {
   id: string;
   name: string;
   description: string | null;
+  maxNewCardsPerDay?: number;
+  maxReviewsPerDay?: number;
 };
 
 export default function DeckEditorDialog({ 
@@ -25,6 +27,8 @@ export default function DeckEditorDialog({
 }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [maxNew, setMaxNew] = useState(20);
+  const [maxReviews, setMaxReviews] = useState(200);
   const [isPending, startTransition] = useTransition();
 
   // Sync state with open/close/deck changes
@@ -32,6 +36,8 @@ export default function DeckEditorDialog({
     if (isOpen) {
       setName(deck ? deck.name : "");
       setDescription(deck && deck.description ? deck.description : "");
+      setMaxNew(deck && deck.maxNewCardsPerDay !== undefined ? deck.maxNewCardsPerDay : 20);
+      setMaxReviews(deck && deck.maxReviewsPerDay !== undefined ? deck.maxReviewsPerDay : 200);
     }
   }, [deck, isOpen]);
 
@@ -40,10 +46,10 @@ export default function DeckEditorDialog({
     
     startTransition(async () => {
       if (deck) {
-        await updateDeck(deck.id, name, description);
+        await updateDeck(deck.id, name, description, maxNew, maxReviews);
         onClose();
       } else if (userId) {
-        const newDeck = await createDeck(userId, name, description);
+        const newDeck = await createDeck(userId, name, description, maxNew, maxReviews);
         onClose(newDeck.id);
       }
     });
@@ -69,6 +75,7 @@ export default function DeckEditorDialog({
               className="h-12 rounded-xl border-slate-200 focus:ring-indigo-500 font-medium text-slate-700"
             />
           </div>
+          
           <div>
             <Label className="font-bold text-slate-700 mb-2 block">Description</Label>
             <Input 
@@ -78,6 +85,31 @@ export default function DeckEditorDialog({
               disabled={isPending}
               className="h-12 rounded-xl border-slate-200 focus:ring-indigo-500 font-medium text-slate-700"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label className="font-bold text-slate-700 mb-2 block">New Cards / Day</Label>
+              <Input 
+                type="number"
+                min={0}
+                value={maxNew} 
+                onChange={(e) => setMaxNew(Math.max(0, Number(e.target.value)))}
+                disabled={isPending}
+                className="h-12 rounded-xl border-slate-200 focus:ring-indigo-500 font-medium text-slate-700"
+              />
+            </div>
+            <div>
+              <Label className="font-bold text-slate-700 mb-2 block">Reviews / Day</Label>
+              <Input 
+                type="number"
+                min={0}
+                value={maxReviews} 
+                onChange={(e) => setMaxReviews(Math.max(0, Number(e.target.value)))}
+                disabled={isPending}
+                className="h-12 rounded-xl border-slate-200 focus:ring-indigo-500 font-medium text-slate-700"
+              />
+            </div>
           </div>
         </div>
 

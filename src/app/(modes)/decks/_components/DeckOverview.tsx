@@ -7,16 +7,22 @@ import { useState, useTransition } from "react";
 import DeckEditorDialog from "./DeckEditorDialog";
 
 type DeckStats = {
-  newCards: number;
-  learningCards: number;
-  reviewCards: number;
-  total: number;
+  newStudiedToday: number;
+  maxNewCardsPerDay: number;
+  remainingNew: number;
+  learningCount: number;
+  reviewsStudiedToday: number;
+  maxReviewsPerDay: number;
+  remainingReviews: number;
+  totalCards: number;
 };
 
 type Deck = {
   id: string;
   name: string;
   description: string | null;
+  maxNewCardsPerDay?: number;
+  maxReviewsPerDay?: number;
 };
 
 export default function DeckOverview({ deck, stats }: { deck: Deck, stats: DeckStats }) {
@@ -43,18 +49,33 @@ export default function DeckOverview({ deck, stats }: { deck: Deck, stats: DeckS
         <p className="text-slate-500 font-medium mb-12 max-w-lg text-center">{deck.description}</p>
       )}
 
-      <div className="grid grid-cols-3 gap-8 md:gap-16 text-lg font-medium mb-12 w-full max-w-xl">
+      <div className="grid grid-cols-3 gap-8 md:gap-16 text-lg font-medium mb-8 w-full max-w-xl">
         <div className="flex flex-col items-center">
           <span className="text-slate-500 font-bold text-sm tracking-widest uppercase mb-3">New</span>
-          <span className="text-cyan-500 font-black text-4xl drop-shadow-sm">{stats.newCards}</span>
+          <span className="text-cyan-500 font-black text-4xl drop-shadow-sm">{stats.remainingNew}</span>
         </div>
         <div className="flex flex-col items-center">
           <span className="text-slate-500 font-bold text-sm tracking-widest uppercase mb-3">Learning</span>
-          <span className="text-rose-500 font-black text-4xl drop-shadow-sm">{stats.learningCards}</span>
+          <span className="text-rose-500 font-black text-4xl drop-shadow-sm">{stats.learningCount}</span>
         </div>
         <div className="flex flex-col items-center">
           <span className="text-slate-500 font-bold text-sm tracking-widest uppercase mb-3">Due</span>
-          <span className="text-emerald-500 font-black text-4xl drop-shadow-sm">{stats.reviewCards}</span>
+          <span className="text-emerald-500 font-black text-4xl drop-shadow-sm">{stats.remainingReviews}</span>
+        </div>
+      </div>
+
+      {/* Progress Panel */}
+      <div className="w-full max-w-md bg-slate-50/60 border border-slate-100/80 rounded-2xl p-4 mb-10 flex justify-around text-xs font-semibold text-slate-500 shadow-sm">
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-cyan-400"></span>
+          <span>New studied:</span>
+          <span className="text-slate-800 font-bold">{stats.newStudiedToday} / {stats.maxNewCardsPerDay}</span>
+        </div>
+        <div className="w-px h-4 bg-slate-200"></div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span>Reviews done:</span>
+          <span className="text-slate-800 font-bold">{stats.reviewsStudiedToday} / {stats.maxReviewsPerDay}</span>
         </div>
       </div>
 
