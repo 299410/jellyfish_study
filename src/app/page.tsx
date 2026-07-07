@@ -20,7 +20,7 @@ export default function LandingPage() {
         {/* Header / Brand */}
         <header className="flex justify-between items-center mb-16 animate-in fade-in slide-in-from-top-4 duration-1000">
           <div className="flex items-center gap-3">
-            <Image src="/logo-mascot.png" alt="JellyFish Logo" width={40} height={40} className="drop-shadow-md" priority />
+            <Image src="/logo-clean-v2.png" alt="JellyFish Logo" width={40} height={40} className="drop-shadow-md" priority />
             <span className="font-black text-2xl tracking-tight text-slate-800">JellyFish</span>
           </div>
           <LandingCTA variant="header" />
