@@ -279,8 +279,8 @@ export default function FlashcardStudy({
 
       {/* Flashcard Area */}
       <div 
-        className="w-full h-[400px] relative perspective-1000 cursor-pointer group mb-10"
-        onClick={() => !isFlipped && setIsFlipped(true)}
+        className="w-full h-[460px] relative perspective-1000 cursor-pointer group mb-10"
+        onClick={() => setIsFlipped(prev => !prev)}
       >
         <motion.div
           className="w-full h-full relative preserve-3d"
@@ -288,24 +288,33 @@ export default function FlashcardStudy({
           transition={{ duration: 0.5, type: "spring", stiffness: 200, damping: 20 }}
         >
           {/* Front */}
-          <div className="absolute w-full h-full backface-hidden flex items-center justify-center p-12 bg-white/80 backdrop-blur-3xl border border-slate-100 shadow-[0_20px_60px_-15px_rgba(79,70,229,0.15)] rounded-[2.5rem] overflow-y-auto">
-            <h2 
-              className="text-4xl md:text-5xl font-black text-center text-slate-900 tracking-tight leading-tight"
-              dangerouslySetInnerHTML={{ __html: currentCard.front }}
-            />
+          <div className="absolute w-full h-full backface-hidden flex flex-col pt-12 pb-8 px-8 bg-white/80 backdrop-blur-3xl border border-slate-100 shadow-[0_20px_60px_-15px_rgba(79,70,229,0.15)] rounded-[2.5rem] overflow-y-auto">
+            <div className="flex-grow flex flex-col justify-center items-center">
+              <h2 
+                className="text-4xl md:text-5xl font-black text-center text-slate-900 tracking-tight leading-tight"
+                dangerouslySetInnerHTML={{ __html: currentCard.front }}
+              />
+            </div>
             {!isFlipped && (
-              <p className="absolute bottom-8 text-sm font-bold text-indigo-400 opacity-60 group-hover:opacity-100 transition-opacity tracking-widest uppercase">
+              <p className="text-center text-sm font-bold text-indigo-400 opacity-60 group-hover:opacity-100 transition-opacity tracking-widest uppercase mt-4">
                 Tap to flip
               </p>
             )}
           </div>
           
           {/* Back */}
-          <div className="absolute w-full h-full backface-hidden rotate-y-180 flex items-center justify-center p-12 bg-gradient-to-br from-indigo-50/90 to-cyan-50/90 backdrop-blur-3xl border border-indigo-100 shadow-[0_20px_60px_-15px_rgba(79,70,229,0.15)] rounded-[2.5rem] overflow-y-auto">
-            <h2 
-              className="text-3xl md:text-4xl font-bold text-center text-slate-800 whitespace-pre-wrap leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: currentCard.back }}
-            />
+          <div className="absolute w-full h-full backface-hidden rotate-y-180 flex flex-col pt-12 pb-8 px-8 bg-gradient-to-br from-indigo-50/90 to-cyan-50/90 backdrop-blur-3xl border border-indigo-100 shadow-[0_20px_60px_-15px_rgba(79,70,229,0.15)] rounded-[2.5rem] overflow-y-auto">
+            <div className="flex-grow flex flex-col justify-center items-center">
+              <h2 
+                className="text-3xl md:text-4xl font-bold text-center text-slate-800 whitespace-pre-wrap leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: currentCard.back }}
+              />
+            </div>
+            {isFlipped && (
+              <p className="text-center text-sm font-bold text-indigo-400 opacity-60 group-hover:opacity-100 transition-opacity tracking-widest uppercase mt-4">
+                Tap to flip back
+              </p>
+            )}
           </div>
         </motion.div>
       </div>
