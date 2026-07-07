@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { AudioRecorder } from '@/components/AudioRecorder';
-import { Play, ArrowRight, Eye, EyeOff, Volume2, Mic, Loader2, Sparkles, CheckCircle, LogOut, GraduationCap, XCircle, AlertCircle, Lightbulb, Check } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Play, ArrowRight, Eye, EyeOff, Volume2, Mic, Loader2, Sparkles, CheckCircle, LogOut, GraduationCap, XCircle, Lightbulb, Check } from 'lucide-react';
 import { QuestionSet, Question } from './QuestionSetList';
 
 interface Props {
@@ -239,30 +240,30 @@ export function ActiveSession({ selectedSet, onFinish }: Props) {
     switch (sessionStatus) {
       case 'speaking':
         return (
-          <div className="flex flex-col items-center space-y-3 p-6 bg-blue-50/50 border border-blue-100/50 rounded-2xl animate-pulse">
-            <Volume2 className="w-10 h-10 text-blue-500" />
-            <p className="text-blue-700 font-bold text-sm tracking-wide uppercase">🔈 Teacher is speaking...</p>
+          <div className="flex flex-col items-center space-y-2 p-4 bg-blue-50/40 border border-blue-100/30 rounded-2xl animate-pulse">
+            <Volume2 className="w-8 h-8 text-blue-500" />
+            <p className="text-blue-700 font-extrabold text-[10px] uppercase tracking-wider">Speaker: Active</p>
           </div>
         );
       case 'listening':
         return (
-          <div className="flex flex-col items-center space-y-3 p-6 bg-emerald-50/50 border border-emerald-100/50 rounded-2xl">
-            <Mic className="w-10 h-10 text-emerald-500 animate-bounce" />
-            <p className="text-emerald-700 font-bold text-sm tracking-wide uppercase">👂 Listening to your response...</p>
+          <div className="flex flex-col items-center space-y-2 p-4 bg-emerald-50/40 border border-emerald-100/30 rounded-2xl">
+            <Mic className="w-8 h-8 text-emerald-500 animate-bounce" />
+            <p className="text-emerald-700 font-extrabold text-[10px] uppercase tracking-wider">Listening to you...</p>
           </div>
         );
       case 'processing':
         return (
-          <div className="flex flex-col items-center space-y-3 p-6 bg-amber-50/50 border border-amber-100/50 rounded-2xl">
-            <Loader2 className="w-10 h-10 text-amber-500 animate-spin" />
-            <p className="text-amber-700 font-bold text-sm tracking-wide uppercase">🤖 Evaluating response...</p>
+          <div className="flex flex-col items-center space-y-2 p-4 bg-amber-50/40 border border-amber-100/30 rounded-2xl">
+            <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+            <p className="text-amber-700 font-extrabold text-[10px] uppercase tracking-wider">Analyzing response...</p>
           </div>
         );
       case 'feedback':
         return (
-          <div className="flex flex-col items-center space-y-3 p-6 bg-indigo-50/50 border border-indigo-100/50 rounded-2xl">
-            <Sparkles className="w-10 h-10 text-indigo-500" />
-            <p className="text-indigo-700 font-bold text-sm tracking-wide uppercase">📄 Feedback Received</p>
+          <div className="flex flex-col items-center space-y-2 p-4 bg-indigo-50/40 border border-indigo-100/30 rounded-2xl">
+            <Sparkles className="w-8 h-8 text-indigo-500" />
+            <p className="text-indigo-700 font-extrabold text-[10px] uppercase tracking-wider">Evaluation Ready</p>
           </div>
         );
       default:
@@ -276,7 +277,7 @@ export function ActiveSession({ selectedSet, onFinish }: Props) {
     // Check if it is a general fallback
     if (!parsed.errorCorrection && !parsed.sampleAnswer && !parsed.mentorTip) {
       return (
-        <div className="whitespace-pre-wrap text-slate-700 text-base md:text-lg leading-relaxed font-semibold">
+        <div className="whitespace-pre-wrap text-slate-700 text-sm leading-relaxed font-semibold">
           {feedback}
         </div>
       );
@@ -286,66 +287,66 @@ export function ActiveSession({ selectedSet, onFinish }: Props) {
     const sampleDetails = parseSampleDetails(parsed.sampleAnswer);
 
     return (
-      <div className="space-y-6 text-left">
+      <div className="space-y-6 text-left pb-4">
         
-        {/* Card 1: General Review */}
+        {/* Section 1: General Review (Border accent style) */}
         {parsed.generalReview && (
-          <div className="bg-indigo-50/40 border border-indigo-100/50 rounded-3xl p-5 flex gap-4 items-start shadow-sm transition-all duration-300 hover:shadow-md">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0 mt-0.5">
-              <Sparkles className="w-5 h-5 text-indigo-600" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-extrabold uppercase tracking-wider text-slate-400">General Review</p>
-              <p className="text-slate-700 font-bold text-base leading-relaxed">{parsed.generalReview}</p>
-            </div>
+          <div className="border-l-4 border-indigo-500 pl-4 py-0.5 space-y-1">
+            <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">General Review</p>
+            <p className="text-slate-600 font-bold text-sm leading-relaxed">{parsed.generalReview}</p>
           </div>
         )}
 
-        {/* Card 2: Error Correction */}
+        {/* Section 2: Error Correction */}
         {parsed.errorCorrection && (
-          <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-slate-50">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Correction</span>
-            </div>
+          <div className="border-l-4 border-rose-400 pl-4 py-0.5 space-y-2">
+            <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest">Correction</p>
             {errorDetails.sai || errorDetails.dung ? (
-              <div className="space-y-3">
-                {errorDetails.sai && (
-                  <div className="bg-rose-50/50 border border-rose-100/40 text-rose-800 px-4 py-3.5 rounded-2xl flex items-start gap-3">
-                    <XCircle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-xs font-extrabold uppercase tracking-wider text-rose-400">Your Answer</p>
-                      <p className="font-semibold text-sm mt-0.5">{errorDetails.sai}</p>
-                    </div>
-                  </div>
-                )}
-                {errorDetails.dung && (
-                  <div className="bg-emerald-50/50 border border-emerald-100/40 text-emerald-800 px-4 py-3.5 rounded-2xl flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">Suggested Correction</p>
-                      <p className="font-bold text-sm mt-0.5">{errorDetails.dung}</p>
-                    </div>
-                  </div>
-                )}
+              <div className="space-y-2.5">
+                <div className="flex items-center flex-wrap gap-2 text-sm">
+                  {errorDetails.sai && (
+                    <span className="text-slate-400 line-through font-semibold bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100">
+                      {errorDetails.sai}
+                    </span>
+                  )}
+                  {errorDetails.sai && errorDetails.dung && <ArrowRight className="w-4 h-4 text-slate-300 shrink-0" />}
+                  {errorDetails.dung && (
+                    <span className="text-emerald-700 font-extrabold bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full flex items-center gap-1.5">
+                      <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> {errorDetails.dung}
+                    </span>
+                  )}
+                </div>
                 {errorDetails.lyDo && (
-                  <p className="text-sm text-slate-500 font-medium pl-3 border-l-2 border-slate-200 mt-2 italic">
+                  <p className="text-xs text-slate-500 font-medium italic leading-relaxed">
                     {errorDetails.lyDo}
                   </p>
                 )}
               </div>
             ) : (
-              <p className="text-slate-700 text-sm font-semibold leading-relaxed whitespace-pre-wrap">
+              <p className="text-slate-600 text-sm font-semibold leading-relaxed whitespace-pre-wrap">
                 {parsed.errorCorrection}
               </p>
             )}
           </div>
         )}
 
-        {/* Card 3: Sample Answer & TTS audio */}
+        {/* Section 3: Sample Answer & TTS */}
         {parsed.sampleAnswer && (
-          <div className="bg-gradient-to-br from-indigo-50/20 to-purple-50/20 border border-indigo-100/30 rounded-3xl p-6 shadow-sm relative overflow-hidden flex flex-col justify-between">
-            <div className="flex items-center justify-between gap-4 mb-2">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Sample Japanese</span>
+          <div className="border-l-4 border-emerald-400 pl-4 py-0.5 space-y-2">
+            <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Suggested Japanese</p>
+            <div className="bg-slate-50/70 border border-slate-100 rounded-2xl p-4 flex items-center justify-between gap-4">
+              <div className="space-y-1">
+                {sampleDetails.mau && (
+                  <p className="font-black text-indigo-950 text-base font-mono tracking-wide leading-relaxed">
+                    {sampleDetails.mau}
+                  </p>
+                )}
+                {sampleDetails.dich && (
+                  <p className="text-xs text-slate-400 font-bold italic">
+                    {sampleDetails.dich}
+                  </p>
+                )}
+              </div>
               <Button 
                 size="icon" 
                 variant="ghost" 
@@ -356,36 +357,16 @@ export function ActiveSession({ selectedSet, onFinish }: Props) {
                 <Volume2 className="w-4 h-4 fill-current" />
               </Button>
             </div>
-            {sampleDetails.mau || sampleDetails.dich ? (
-              <div className="space-y-2">
-                {sampleDetails.mau && (
-                  <p className="font-black text-indigo-950 text-xl font-mono tracking-wide leading-relaxed">
-                    {sampleDetails.mau}
-                  </p>
-                )}
-                {sampleDetails.dich && (
-                  <p className="text-sm text-slate-500 font-bold italic">
-                    {sampleDetails.dich}
-                  </p>
-                )}
-              </div>
-            ) : (
-              <p className="text-indigo-950 font-bold text-base leading-relaxed whitespace-pre-wrap">
-                {parsed.sampleAnswer}
-              </p>
-            )}
           </div>
         )}
 
-        {/* Card 4: Teacher's Tip */}
+        {/* Section 4: Teacher's Tip */}
         {parsed.mentorTip && (
-          <div className="bg-amber-50/40 border border-amber-200/40 rounded-3xl p-5 flex gap-4 items-start shadow-sm relative overflow-hidden">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0 mt-0.5">
-              <Lightbulb className="w-5 h-5 text-amber-500" />
-            </div>
-            <div className="space-y-1 relative z-10">
-              <p className="text-xs font-extrabold uppercase tracking-wider text-amber-500/80">Teacher's Tip</p>
-              <p className="text-slate-700 font-bold text-sm leading-relaxed">{parsed.mentorTip}</p>
+          <div className="bg-amber-50/40 border border-amber-200/30 rounded-2xl p-4 flex gap-3 items-start relative overflow-hidden">
+            <Lightbulb className="w-4.5 h-4.5 text-amber-500 shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <p className="text-[10px] font-extrabold uppercase tracking-wider text-amber-500/80">Teacher's Tip</p>
+              <p className="text-slate-600 font-medium text-xs leading-relaxed">{parsed.mentorTip}</p>
             </div>
           </div>
         )}
@@ -413,85 +394,134 @@ export function ActiveSession({ selectedSet, onFinish }: Props) {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex flex-col items-center justify-center space-y-10 py-10 w-full">
+      <div className="py-6 w-full flex-1 flex flex-col justify-center">
         
-        <div className="w-full max-w-md">
-          {renderRecruiterState()}
-        </div>
-
-        <div className="bg-white/60 backdrop-blur-md border border-white/60 p-8 rounded-3xl w-full max-w-2xl shadow-sm relative group min-h-[120px] flex items-center justify-center">
-          <h2 className="text-xl md:text-2xl font-bold text-slate-800 leading-relaxed text-center px-4">
-            {showQuestionText || sessionStatus === 'feedback' ? (
-              currentQuestion.content
-            ) : (
-              <span className="text-slate-400 font-medium italic">
-                [ Japanese question is hidden. Listen carefully! ]
-              </span>
-            )}
-          </h2>
-
-          {sessionStatus !== 'feedback' && (
-            <button
-              onClick={() => setShowQuestionText(!showQuestionText)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-indigo-600 transition-colors p-2 rounded-full hover:bg-slate-100/50 cursor-pointer"
-              title={showQuestionText ? "Hide question" : "Reveal question"}
-            >
-              {showQuestionText ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-            </button>
-          )}
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 justify-center pt-2">
-          <Button 
-            variant="outline" 
-            size="lg" 
-            disabled={sessionStatus === 'processing'}
-            onClick={() => speak(currentQuestion.content)} 
-            className="rounded-full h-12 px-6 border-indigo-200/50 hover:bg-indigo-50/50 hover:text-indigo-900 transition-all text-indigo-600 bg-white/40 backdrop-blur-sm disabled:opacity-50 cursor-pointer"
-          >
-            <Play className="w-5 h-5 mr-3 fill-current" /> Replay Question
-          </Button>
-          
-          <div className="flex items-center gap-3 bg-white/40 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/60 shadow-sm" title="Speech rate">
-            <span className="text-sm font-bold text-slate-500 w-12 text-center">{speechRate}x</span>
-            <input 
-              type="range" 
-              min="0.5" 
-              max="1.5" 
-              step="0.1" 
-              value={speechRate}
-              onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
-              className="w-28 accent-indigo-600 cursor-pointer"
-            />
-          </div>
-        </div>
-
         {sessionStatus === 'feedback' && feedback ? (
-          <div className="w-full max-w-3xl bg-white/40 backdrop-blur-2xl border border-white/60 p-6 md:p-8 rounded-[2.5rem] shadow-[0_20px_50px_-15px_rgba(79,70,229,0.06)] space-y-6 animate-in slide-in-from-bottom-8 duration-700">
-            <h4 className="text-xl font-black text-slate-900 flex items-center gap-3 pb-4 border-b border-slate-100">
-              <div className="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-100/20 flex items-center justify-center shrink-0">
-                <GraduationCap className="w-5 h-5 text-indigo-600" />
-              </div>
-              Teacher's Feedback 🌟
-            </h4>
+          // Two-column Split Layout in feedback mode
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start w-full max-w-5xl mx-auto animate-in fade-in duration-500">
             
-            {/* Parsed and Beautified Cards */}
-            {renderParsedFeedback()}
+            {/* Left Side: Question Display, Controls, Next Question Button */}
+            <div className="lg:col-span-4 space-y-6 flex flex-col justify-between min-h-[350px]">
+              <div className="space-y-5">
+                <div className="bg-white/80 backdrop-blur-md border border-slate-100 shadow-lg shadow-slate-100/50 rounded-3xl p-6 relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+                  <div>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Current Question</span>
+                    <h2 className="text-xl md:text-2xl font-black text-slate-800 leading-normal tracking-wide text-center py-4">
+                      {currentQuestion.content}
+                    </h2>
+                  </div>
+                </div>
 
-            <Button 
-              onClick={nextQuestion} 
-              size="lg" 
-              className="w-full mt-4 bg-slate-900 hover:bg-indigo-600 text-white rounded-3xl text-lg h-16 font-semibold transition-all hover:scale-[1.02] shadow-lg hover:shadow-indigo-500/25 cursor-pointer"
-            >
-              {currentQuestionIndex + 1 === questions.length ? 'Finish Session' : 'Next Question'} <ArrowRight className="w-6 h-6 ml-2" />
-            </Button>
+                <div className="bg-white/80 backdrop-blur-md border border-slate-100 shadow-lg shadow-slate-100/50 rounded-3xl p-5 space-y-4">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => speak(currentQuestion.content)} 
+                    className="w-full bg-slate-50 hover:bg-indigo-50 border border-indigo-100/30 text-indigo-600 rounded-2xl h-12 font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Play className="w-4.5 h-4.5 fill-current" /> Replay Question
+                  </Button>
+                  
+                  <div className="flex items-center gap-3 w-full justify-between px-2" title="Speech rate">
+                    <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Speech Rate</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-500 w-10 text-center">{speechRate}x</span>
+                      <input 
+                        type="range" 
+                        min="0.5" 
+                        max="1.5" 
+                        step="0.1" 
+                        value={speechRate}
+                        onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
+                        className="w-24 accent-indigo-600 cursor-pointer"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Button 
+                onClick={nextQuestion} 
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-3xl h-14 font-extrabold text-base transition-all hover:scale-[1.01] shadow-lg shadow-indigo-600/10 cursor-pointer mt-4"
+              >
+                {currentQuestionIndex + 1 === questions.length ? 'Finish Session' : 'Next Question'} <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </div>
+
+            {/* Right Side: Scrollable Feedback Cards container */}
+            <div className="lg:col-span-8 bg-white/95 border border-slate-100 shadow-2xl shadow-indigo-950/5 rounded-3xl p-6 flex flex-col h-[560px] overflow-hidden">
+              <h4 className="text-base font-black text-slate-800 flex items-center gap-3 pb-3 border-b border-slate-50 mb-5 shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0">
+                  <GraduationCap className="w-4.5 h-4.5 text-white" />
+                </div>
+                Teacher's Feedback
+              </h4>
+              
+              <ScrollArea className="flex-1 pr-1">
+                {renderParsedFeedback()}
+              </ScrollArea>
+            </div>
+
           </div>
         ) : (
-          <div className="mt-6 scale-125">
-            <AudioRecorder 
-              onRecordingComplete={handleAudioComplete} 
-              isProcessing={isProcessing || sessionStatus === 'speaking'} 
-            />
+          // Standard Single Column centered layout for Active Speaking / Recording state
+          <div className="flex flex-col items-center justify-center space-y-8 w-full max-w-2xl mx-auto">
+            
+            <div className="w-full max-w-md">
+              {renderRecruiterState()}
+            </div>
+
+            <div className="bg-white/60 backdrop-blur-md border border-white/60 p-8 rounded-3xl w-full shadow-sm relative group min-h-[140px] flex items-center justify-center">
+              <h2 className="text-xl md:text-2xl font-bold text-slate-800 leading-relaxed text-center px-4">
+                {showQuestionText ? (
+                  currentQuestion.content
+                ) : (
+                  <span className="text-slate-400 font-medium italic">
+                    [ Japanese question is hidden. Listen carefully! ]
+                  </span>
+                )}
+              </h2>
+
+              <button
+                onClick={() => setShowQuestionText(!showQuestionText)}
+                className="absolute top-4 right-4 text-slate-400 hover:text-indigo-600 transition-colors p-2 rounded-full hover:bg-slate-100/50 cursor-pointer"
+                title={showQuestionText ? "Hide question" : "Reveal question"}
+              >
+                {showQuestionText ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 justify-center pt-2">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                disabled={sessionStatus === 'processing'}
+                onClick={() => speak(currentQuestion.content)} 
+                className="rounded-full h-12 px-6 border-indigo-200/50 hover:bg-indigo-50/50 hover:text-indigo-900 transition-all text-indigo-600 bg-white/40 backdrop-blur-sm disabled:opacity-50 cursor-pointer text-sm font-bold"
+              >
+                <Play className="w-4 h-4 mr-2.5 fill-current" /> Replay Question
+              </Button>
+              
+              <div className="flex items-center gap-3 bg-white/40 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/60 shadow-sm" title="Speech rate">
+                <span className="text-xs font-bold text-slate-500 w-10 text-center">{speechRate}x</span>
+                <input 
+                  type="range" 
+                  min="0.5" 
+                  max="1.5" 
+                  step="0.1" 
+                  value={speechRate}
+                  onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
+                  className="w-24 accent-indigo-600 cursor-pointer"
+                />
+              </div>
+            </div>
+
+            <div className="pt-6 scale-125">
+              <AudioRecorder 
+                onRecordingComplete={handleAudioComplete} 
+                isProcessing={isProcessing || sessionStatus === 'speaking'} 
+              />
+            </div>
+
           </div>
         )}
 
