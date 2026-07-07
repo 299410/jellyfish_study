@@ -53,12 +53,12 @@ export default function CardEditorDialog({
 
   return (
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white p-8 rounded-3xl shadow-2xl max-w-2xl w-full border border-slate-100">
-        <h2 className="text-2xl font-black text-slate-900 mb-6 tracking-tight">
+      <div className="bg-white p-8 rounded-3xl shadow-2xl max-w-2xl w-full border border-slate-100 max-h-[90vh] flex flex-col">
+        <h2 className="text-2xl font-black text-slate-900 mb-6 tracking-tight flex-shrink-0">
           {editingCard ? "Edit Flashcard" : "Add New Flashcard"}
         </h2>
         
-        <div className="space-y-6 mb-8">
+        <div className="space-y-6 mb-6 overflow-y-auto flex-1 pr-2 scrollbar-thin">
           <div>
             <Label className="font-bold text-slate-700 mb-2 block">Front (Question / Target)</Label>
             <textarea
@@ -82,7 +82,7 @@ export default function CardEditorDialog({
           <p className="text-xs text-slate-400 font-medium">Supports basic HTML (e.g., &lt;br&gt; for new line, &lt;b&gt; for bold).</p>
         </div>
 
-        <div className="flex justify-end space-x-3 pt-4 border-t border-slate-100">
+        <div className="flex justify-end space-x-3 pt-4 border-t border-slate-100 flex-shrink-0">
           <Button 
             variant="outline" 
             onClick={onClose} 
