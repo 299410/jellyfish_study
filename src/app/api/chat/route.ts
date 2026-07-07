@@ -10,14 +10,14 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { message, history } = body as { message: string, history: ChatMessage[] };
+    const { message, history, mode } = body as { message: string, history: ChatMessage[], mode?: 'chat' | 'interview' };
 
     if (!message) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
 
     const provider = new GeminiProvider(apiKey);
-    const stream = await provider.generateTeacherResponse(message, history || []);
+    const stream = await provider.generateTeacherResponse(message, history || [], mode);
 
     // Return the stream directly for SSE / Streaming consumption
     return new Response(stream, {
