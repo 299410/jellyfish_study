@@ -7,16 +7,22 @@ import { useState, useTransition } from "react";
 import DeckEditorDialog from "./DeckEditorDialog";
 
 type DeckStats = {
-  newCards: number;
-  learningCards: number;
-  reviewCards: number;
-  total: number;
+  newStudiedToday: number;
+  maxNewCardsPerDay: number;
+  remainingNew: number;
+  learningCount: number;
+  reviewsStudiedToday: number;
+  maxReviewsPerDay: number;
+  remainingReviews: number;
+  totalCards: number;
 };
 
 type Deck = {
   id: string;
   name: string;
   description: string | null;
+  maxNewCardsPerDay?: number;
+  maxReviewsPerDay?: number;
 };
 
 export default function DeckOverview({ deck, stats }: { deck: Deck, stats: DeckStats }) {
@@ -46,15 +52,18 @@ export default function DeckOverview({ deck, stats }: { deck: Deck, stats: DeckS
       <div className="grid grid-cols-3 gap-8 md:gap-16 text-lg font-medium mb-12 w-full max-w-xl">
         <div className="flex flex-col items-center">
           <span className="text-slate-500 font-bold text-sm tracking-widest uppercase mb-3">New</span>
-          <span className="text-cyan-500 font-black text-4xl drop-shadow-sm">{stats.newCards}</span>
+          <span className="text-cyan-500 font-black text-4xl drop-shadow-sm">{stats.remainingNew}</span>
+          <span className="text-xs text-slate-400 font-semibold mt-1.5">Studied: {stats.newStudiedToday}/{stats.maxNewCardsPerDay}</span>
         </div>
         <div className="flex flex-col items-center">
           <span className="text-slate-500 font-bold text-sm tracking-widest uppercase mb-3">Learning</span>
-          <span className="text-rose-500 font-black text-4xl drop-shadow-sm">{stats.learningCards}</span>
+          <span className="text-rose-500 font-black text-4xl drop-shadow-sm">{stats.learningCount}</span>
+          <span className="text-xs text-slate-400 font-semibold mt-1.5">Active steps</span>
         </div>
         <div className="flex flex-col items-center">
           <span className="text-slate-500 font-bold text-sm tracking-widest uppercase mb-3">Due</span>
-          <span className="text-emerald-500 font-black text-4xl drop-shadow-sm">{stats.reviewCards}</span>
+          <span className="text-emerald-500 font-black text-4xl drop-shadow-sm">{stats.remainingReviews}</span>
+          <span className="text-xs text-slate-400 font-semibold mt-1.5">Reviewed: {stats.reviewsStudiedToday}/{stats.maxReviewsPerDay}</span>
         </div>
       </div>
 
