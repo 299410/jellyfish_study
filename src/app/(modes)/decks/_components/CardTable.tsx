@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { deleteCard } from "@/app/actions/flashcard";
 import { Button } from "@/components/ui/button";
 import CardEditorDialog from "./CardEditorDialog";
@@ -20,12 +20,14 @@ export default function CardTable({
   deckId, 
   initialCards, 
   totalPages,
-  currentPage
+  currentPage,
+  autoAddCard
 }: { 
   deckId: string;
   initialCards: Flashcard[];
   totalPages: number;
   currentPage: number;
+  autoAddCard?: boolean;
 }) {
   const [editingCard, setEditingCard] = useState<Flashcard | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
@@ -40,6 +42,17 @@ export default function CardTable({
     setEditingCard(null);
     setIsEditorOpen(true);
   };
+
+  useEffect(() => {
+    if (autoAddCard) {
+      handleAddNew();
+      
+      // Clean up URL parameter to avoid reopening modal on refresh
+      const url = new URL(window.location.href);
+      url.searchParams.delete('addCard');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [autoAddCard]);
 
   const handleDelete = (id: string) => {
     if (confirm("Are you sure you want to permanently delete this card?")) {
