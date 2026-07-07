@@ -1,9 +1,7 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/db/prisma";
 
 export async function getDecks(userId: string) {
   const decks = await prisma.deck.findMany({
@@ -44,12 +42,20 @@ export async function getDeck(id: string) {
   });
 }
 
-export async function createDeck(userId: string, name: string, description: string) {
+export async function createDeck(
+  userId: string, 
+  name: string, 
+  description: string,
+  maxNewCardsPerDay = 20,
+  maxReviewsPerDay = 200
+) {
   const deck = await prisma.deck.create({
     data: {
       userId,
       name,
       description,
+      maxNewCardsPerDay,
+      maxReviewsPerDay,
     },
   });
   
@@ -72,10 +78,21 @@ export async function bulkAddCards(deckId: string, cards: { front: string; back:
   return result;
 }
 
-export async function updateDeck(id: string, name: string, description: string) {
+export async function updateDeck(
+  id: string, 
+  name: string, 
+  description: string,
+  maxNewCardsPerDay?: number,
+  maxReviewsPerDay?: number
+) {
   const deck = await prisma.deck.update({
     where: { id },
-    data: { name, description },
+    data: { 
+      name, 
+      description,
+      ...(maxNewCardsPerDay !== undefined && { maxNewCardsPerDay }),
+      ...(maxReviewsPerDay !== undefined && { maxReviewsPerDay }),
+    },
   });
   revalidatePath('/decks');
   revalidatePath('/decks/' + id);

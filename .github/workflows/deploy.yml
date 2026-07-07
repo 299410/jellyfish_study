@@ -1,0 +1,90 @@
+name: CI/CD Pipeline - Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main # Tự động chạy khi push hoặc merge vào nhánh main
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_IP }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            # 1. Đăng nhập vào GHCR trên VPS để có quyền kéo image private
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin || \
+            echo "${{ secrets.GH_PAT }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+
+            # 2. Định nghĩa tên Image đầy đủ
+            IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+            
+            echo "📥 Kéo Docker Image mới nhất về..."
+            docker pull $IMAGE
+
+            echo "🛑 Dừng và xóa Container cũ..."
+            docker stop nihongo-reflex-app || true
+            docker rm nihongo-reflex-app || true
+
+            echo "🏃 Khởi chạy Container mới..."
+            # Chạy từ thư mục chứa file .env ngoài VPS để giữ an toàn bảo mật cho các API Key
+            docker run -d \
+              --name nihongo-reflex-app \
+              -p 3000:3000 \
+              --env-file /var/www/nihongo-reflex/.env \
+              --restart always \
+              $IMAGE
+
+            echo "🧹 Dọn dẹp các Docker image cũ để giải phóng dung lượng..."
+            docker image prune -a -f
+            
+            echo "✅ Đã deploy thành công phiên bản mới!"

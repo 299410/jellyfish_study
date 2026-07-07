@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: nihongo-reflex-db-dev
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: local_secure_password_123
+      POSTGRES_DB: nihongo_reflex
+    # Ở môi trường Dev: Mở cổng 5432 ra localhost để Next.js chạy trực tiếp ở máy host (npm run dev)
+    # và các công cụ quản lý DB local (TablePlus, DBeaver, pgAdmin local) kết nối được.
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata_dev:/var/lib/postgresql/data
+
+volumes:
+  pgdata_dev:
