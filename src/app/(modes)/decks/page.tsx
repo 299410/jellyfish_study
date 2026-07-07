@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getDecks } from "@/app/actions/deck";
 import ImportCsvDialog from "./_components/ImportCsvDialog";
+import DeckEditorDialog from "./_components/DeckEditorDialog";
 import { useUserId } from "@/components/UserOnboarding";
+import { Button } from "@/components/ui/button";
 
 type DeckWithCount = {
   id: string;
@@ -18,6 +20,7 @@ export default function DecksPage() {
   const userId = useUserId();
   const [decks, setDecks] = useState<DeckWithCount[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
@@ -58,7 +61,13 @@ export default function DecksPage() {
             <h1 className="text-4xl font-black text-slate-900 tracking-tight">Flashcard Decks</h1>
             <p className="text-slate-500 font-medium mt-2">Manage and study your vocabulary collections</p>
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-3">
+            <Button 
+              onClick={() => setIsCreateOpen(true)}
+              className="rounded-full px-6 h-12 bg-slate-900 hover:bg-indigo-600 text-white font-bold shadow-md hover:shadow-xl transition-all cursor-pointer"
+            >
+              + Create Deck
+            </Button>
             <ImportCsvDialog decks={decks} userId={userId!} onImported={refreshDecks} />
           </div>
         </div>
@@ -104,6 +113,15 @@ export default function DecksPage() {
           )}
         </div>
       </div>
+
+      <DeckEditorDialog 
+        userId={userId!}
+        isOpen={isCreateOpen}
+        onClose={() => {
+          setIsCreateOpen(false);
+          refreshDecks();
+        }}
+      />
     </div>
   );
 }

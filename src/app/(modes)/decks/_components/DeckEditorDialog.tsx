@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { updateDeck } from "@/app/actions/deck";
+import { useState, useEffect, useTransition } from "react";
+import { updateDeck, createDeck } from "@/app/actions/deck";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,22 +14,36 @@ type Deck = {
 
 export default function DeckEditorDialog({ 
   deck, 
+  userId,
   isOpen, 
   onClose 
 }: { 
-  deck: Deck; 
+  deck?: Deck | null; 
+  userId?: string;
   isOpen: boolean; 
   onClose: () => void;
 }) {
-  const [name, setName] = useState(deck.name);
-  const [description, setDescription] = useState(deck.description || "");
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [isPending, startTransition] = useTransition();
+
+  // Sync state with open/close/deck changes
+  useEffect(() => {
+    if (isOpen) {
+      setName(deck ? deck.name : "");
+      setDescription(deck && deck.description ? deck.description : "");
+    }
+  }, [deck, isOpen]);
 
   const handleSave = () => {
     if (!name.trim()) return;
     
     startTransition(async () => {
-      await updateDeck(deck.id, name, description);
+      if (deck) {
+        await updateDeck(deck.id, name, description);
+      } else if (userId) {
+        await createDeck(userId, name, description);
+      }
       onClose();
     });
   };
@@ -38,13 +52,16 @@ export default function DeckEditorDialog({
 
   return (
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white p-8 rounded-3xl shadow-2xl max-w-md w-full border border-slate-100">
-        <h2 className="text-2xl font-black text-slate-900 mb-6 tracking-tight">Edit Deck</h2>
+      <div className="bg-white p-8 rounded-3xl shadow-2xl max-w-md w-full border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
+        <h2 className="text-2xl font-black text-slate-900 mb-6 tracking-tight">
+          {deck ? "Edit Deck" : "Create New Deck"}
+        </h2>
         
         <div className="space-y-6 mb-8 text-left">
           <div>
             <Label className="font-bold text-slate-700 mb-2 block">Deck Name</Label>
             <Input 
+              placeholder="e.g. Minna no Nihongo Lesson 1"
               value={name} 
               onChange={(e) => setName(e.target.value)}
               disabled={isPending}
@@ -54,6 +71,7 @@ export default function DeckEditorDialog({
           <div>
             <Label className="font-bold text-slate-700 mb-2 block">Description</Label>
             <Input 
+              placeholder="e.g. Vocabulary and grammar notes"
               value={description} 
               onChange={(e) => setDescription(e.target.value)}
               disabled={isPending}
@@ -76,7 +94,7 @@ export default function DeckEditorDialog({
             disabled={isPending || !name.trim()}
             className="rounded-full px-8 bg-gradient-to-r from-indigo-600 to-cyan-500 text-white font-bold shadow-lg hover:shadow-xl transition-all"
           >
-            {isPending ? "Saving..." : "Save Changes"}
+            {isPending ? "Saving..." : (deck ? "Save Changes" : "Create Deck")}
           </Button>
         </div>
       </div>
