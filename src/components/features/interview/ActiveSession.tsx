@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { AudioRecorder } from '@/components/AudioRecorder';
-import { Play, ArrowRight, Eye, EyeOff, Volume2, Mic, Loader2, Sparkles, CheckCircle } from 'lucide-react';
+import { Play, ArrowRight, Eye, EyeOff, Volume2, Mic, Loader2, Sparkles, CheckCircle, LogOut } from 'lucide-react';
 import { QuestionSet, Question } from './QuestionSetList';
 
 interface Props {
@@ -147,6 +147,15 @@ export function ActiveSession({ selectedSet, onFinish }: Props) {
     }
   };
 
+  const handleExit = () => {
+    if (confirm('Bạn có chắc chắn muốn thoát khỏi phiên phỏng vấn này? Tiến trình chưa hoàn thành sẽ không được lưu.')) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      onFinish();
+    }
+  };
+
   if (questions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 space-y-4">
@@ -194,13 +203,26 @@ export function ActiveSession({ selectedSet, onFinish }: Props) {
   };
 
   return (
-    <div className="flex flex-col h-full items-center justify-center space-y-10 animate-in fade-in duration-700 py-6 relative z-10">
+    <div className="flex flex-col h-full w-full animate-in fade-in duration-700 relative z-10">
       
-      <div className="text-center space-y-6 max-w-4xl w-full px-4 flex flex-col items-center">
+      {/* Top Header Bar */}
+      <div className="flex justify-between items-center w-full pb-6 border-b border-slate-100">
         <div className="inline-flex items-center justify-center px-4 py-2 rounded-full bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs uppercase tracking-wider shadow-sm">
           Câu hỏi {currentQuestionIndex + 1} / {questions.length}
         </div>
+        
+        <Button 
+          variant="ghost" 
+          onClick={handleExit}
+          className="rounded-full text-slate-500 hover:text-rose-600 hover:bg-rose-50 cursor-pointer transition-colors"
+        >
+          <LogOut className="w-4 h-4 mr-2" /> Rời phòng phỏng vấn
+        </Button>
+      </div>
 
+      {/* Main Content Area */}
+      <div className="flex flex-col items-center justify-center space-y-10 py-10 w-full">
+        
         <div className="w-full max-w-md">
           {renderRecruiterState()}
         </div>
@@ -251,35 +273,36 @@ export function ActiveSession({ selectedSet, onFinish }: Props) {
             />
           </div>
         </div>
-      </div>
 
-      {sessionStatus === 'feedback' && feedback ? (
-        <div className="w-full max-w-3xl bg-white/40 backdrop-blur-2xl border border-white/60 p-8 md:p-10 rounded-[2.5rem] shadow-[0_20px_50px_-15px_rgba(79,70,229,0.06)] space-y-6 animate-in slide-in-from-bottom-8 duration-700">
-          <h4 className="text-2xl font-black text-slate-900 flex items-center gap-3 pb-4 border-b border-slate-100">
-            <div className="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-100/20 flex items-center justify-center shrink-0">
-              <CheckCircle className="w-5 h-5 text-indigo-600" />
+        {sessionStatus === 'feedback' && feedback ? (
+          <div className="w-full max-w-3xl bg-white/40 backdrop-blur-2xl border border-white/60 p-8 md:p-10 rounded-[2.5rem] shadow-[0_20px_50px_-15px_rgba(79,70,229,0.06)] space-y-6 animate-in slide-in-from-bottom-8 duration-700">
+            <h4 className="text-2xl font-black text-slate-900 flex items-center gap-3 pb-4 border-b border-slate-100">
+              <div className="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-100/20 flex items-center justify-center shrink-0">
+                <CheckCircle className="w-5 h-5 text-indigo-600" />
+              </div>
+              Nhận xét từ Mentor
+            </h4>
+            <div className="whitespace-pre-wrap text-slate-700 text-base md:text-lg leading-relaxed font-semibold">
+              {feedback}
             </div>
-            Nhận xét từ Mentor
-          </h4>
-          <div className="whitespace-pre-wrap text-slate-700 text-base md:text-lg leading-relaxed font-semibold">
-            {feedback}
+            <Button 
+              onClick={nextQuestion} 
+              size="lg" 
+              className="w-full mt-4 bg-slate-900 hover:bg-indigo-600 text-white rounded-3xl text-lg h-16 font-semibold transition-all hover:scale-[1.02] shadow-lg hover:shadow-indigo-500/25 cursor-pointer"
+            >
+              {currentQuestionIndex + 1 === questions.length ? 'Hoàn thành Phỏng vấn' : 'Câu hỏi tiếp theo'} <ArrowRight className="w-6 h-6 ml-2" />
+            </Button>
           </div>
-          <Button 
-            onClick={nextQuestion} 
-            size="lg" 
-            className="w-full mt-4 bg-slate-900 hover:bg-indigo-600 text-white rounded-3xl text-lg h-16 font-semibold transition-all hover:scale-[1.02] shadow-lg hover:shadow-indigo-500/25 cursor-pointer"
-          >
-            {currentQuestionIndex + 1 === questions.length ? 'Hoàn thành Phỏng vấn' : 'Câu hỏi tiếp theo'} <ArrowRight className="w-6 h-6 ml-2" />
-          </Button>
-        </div>
-      ) : (
-        <div className="mt-6 scale-125">
-          <AudioRecorder 
-            onRecordingComplete={handleAudioComplete} 
-            isProcessing={isProcessing || sessionStatus === 'speaking'} 
-          />
-        </div>
-      )}
+        ) : (
+          <div className="mt-6 scale-125">
+            <AudioRecorder 
+              onRecordingComplete={handleAudioComplete} 
+              isProcessing={isProcessing || sessionStatus === 'speaking'} 
+            />
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }
