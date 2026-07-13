@@ -68,11 +68,17 @@ export default function FlashcardStudy({
   // Timer: check waiting pool for due cards
   const checkWaitingPool = useCallback(() => {
     const now = Date.now();
+    const LEARN_AHEAD_LIMIT = 20 * 60 * 1000; // 20 minutes Learn Ahead Limit
     const dueCards: Flashcard[] = [];
     const stillWaiting: WaitingCard[] = [];
 
+    const isActiveQueueEmpty = currentIndex >= queue.length;
+
     waitingPool.forEach(wc => {
-      if (wc.dueAt <= now) {
+      const isDue = wc.dueAt <= now;
+      const canLearnAhead = isActiveQueueEmpty && (wc.dueAt - now <= LEARN_AHEAD_LIMIT);
+
+      if (isDue || canLearnAhead) {
         dueCards.push(wc.card);
       } else {
         stillWaiting.push(wc);
@@ -80,8 +86,19 @@ export default function FlashcardStudy({
     });
 
     if (dueCards.length > 0) {
+      // Sort due cards so the most due one comes first
+      dueCards.sort((a, b) => {
+        const wcA = waitingPool.find(w => w.card.id === a.id);
+        const wcB = waitingPool.find(w => w.card.id === b.id);
+        return (wcA?.dueAt || 0) - (wcB?.dueAt || 0);
+      });
+
       setWaitingPool(stillWaiting);
-      setQueue(prev => [...prev, ...dueCards]);
+      setQueue(prev => {
+        const nextQueue = [...prev];
+        nextQueue.splice(currentIndex + 1, 0, ...dueCards);
+        return nextQueue;
+      });
     }
 
     // Schedule next check
@@ -92,11 +109,18 @@ export default function FlashcardStudy({
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => checkWaitingPoolRef.current(), delay);
     }
-  }, [waitingPool]);
+  }, [waitingPool, currentIndex, queue.length]);
 
   useEffect(() => {
     checkWaitingPoolRef.current = checkWaitingPool;
   }, [checkWaitingPool]);
+
+  // Auto-pull cards if the active queue is empty and there are cards in the waiting pool
+  useEffect(() => {
+    if (currentIndex >= queue.length && waitingPool.length > 0) {
+      checkWaitingPool();
+    }
+  }, [currentIndex, queue.length, waitingPool.length, checkWaitingPool]);
 
   useEffect(() => {
     if (waitingPool.length > 0) {
@@ -105,7 +129,7 @@ export default function FlashcardStudy({
       const delay = Math.max(1000, nextDue - now);
 
       if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(checkWaitingPool, delay);
+      timerRef.current = setTimeout(() => checkWaitingPoolRef.current(), delay);
     }
 
     return () => {
