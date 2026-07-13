@@ -26,10 +26,18 @@ type WaitingCard = {
   dueAt: number; // timestamp
 };
 
-export default function FlashcardStudy({ cards: initialCards, deckId }: { cards: Flashcard[], deckId: string }) {
+export default function FlashcardStudy({ 
+  initialQueue, 
+  initialWaitingPool, 
+  deckId 
+}: { 
+  initialQueue: Flashcard[], 
+  initialWaitingPool: WaitingCard[], 
+  deckId: string 
+}) {
   const userId = useUserId();
-  const [queue, setQueue] = useState<Flashcard[]>(initialCards);
-  const [waitingPool, setWaitingPool] = useState<WaitingCard[]>([]);
+  const [queue, setQueue] = useState<Flashcard[]>(initialQueue);
+  const [waitingPool, setWaitingPool] = useState<WaitingCard[]>(initialWaitingPool);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [isPending, setIsPending] = useState(false);
@@ -38,29 +46,39 @@ export default function FlashcardStudy({ cards: initialCards, deckId }: { cards:
   const router = useRouter();
 
   // Session time-tracking
+  // eslint-disable-next-line react-hooks/purity
   const sessionStartTime = useRef(Date.now());
   const hasLoggedOnComplete = useRef(false);
 
   // Session counters
-  const [sessionStats, setSessionStats] = useState({ reviewed: 0, remaining: initialCards.length });
+  const [sessionStats, setSessionStats] = useState({ reviewed: 0, remaining: initialQueue.length });
 
   const currentCard = queue[currentIndex];
 
   // Fetch button hints when card changes
   useEffect(() => {
     if (!currentCard) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHints(null);
     getCardButtonHints(currentCard.id).then(setHints);
   }, [currentCard?.id]);
 
+  const checkWaitingPoolRef = useRef<() => void>(() => {});
+
   // Timer: check waiting pool for due cards
   const checkWaitingPool = useCallback(() => {
     const now = Date.now();
+    const LEARN_AHEAD_LIMIT = 20 * 60 * 1000; // 20 minutes Learn Ahead Limit
     const dueCards: Flashcard[] = [];
     const stillWaiting: WaitingCard[] = [];
 
+    const isActiveQueueEmpty = currentIndex >= queue.length;
+
     waitingPool.forEach(wc => {
-      if (wc.dueAt <= now) {
+      const isDue = wc.dueAt <= now;
+      const canLearnAhead = isActiveQueueEmpty && (wc.dueAt - now <= LEARN_AHEAD_LIMIT);
+
+      if (isDue || canLearnAhead) {
         dueCards.push(wc.card);
       } else {
         stillWaiting.push(wc);
@@ -68,8 +86,19 @@ export default function FlashcardStudy({ cards: initialCards, deckId }: { cards:
     });
 
     if (dueCards.length > 0) {
+      // Sort due cards so the most due one comes first
+      dueCards.sort((a, b) => {
+        const wcA = waitingPool.find(w => w.card.id === a.id);
+        const wcB = waitingPool.find(w => w.card.id === b.id);
+        return (wcA?.dueAt || 0) - (wcB?.dueAt || 0);
+      });
+
       setWaitingPool(stillWaiting);
-      setQueue(prev => [...prev, ...dueCards]);
+      setQueue(prev => {
+        const nextQueue = [...prev];
+        nextQueue.splice(currentIndex + 1, 0, ...dueCards);
+        return nextQueue;
+      });
     }
 
     // Schedule next check
@@ -78,9 +107,20 @@ export default function FlashcardStudy({ cards: initialCards, deckId }: { cards:
       const delay = Math.max(1000, nextDue - now);
       
       if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(checkWaitingPool, delay);
+      timerRef.current = setTimeout(() => checkWaitingPoolRef.current(), delay);
     }
-  }, [waitingPool]);
+  }, [waitingPool, currentIndex, queue.length]);
+
+  useEffect(() => {
+    checkWaitingPoolRef.current = checkWaitingPool;
+  }, [checkWaitingPool]);
+
+  // Auto-pull cards if the active queue is empty and there are cards in the waiting pool
+  useEffect(() => {
+    if (currentIndex >= queue.length && waitingPool.length > 0) {
+      checkWaitingPool();
+    }
+  }, [currentIndex, queue.length, waitingPool.length, checkWaitingPool]);
 
   useEffect(() => {
     if (waitingPool.length > 0) {
@@ -89,7 +129,7 @@ export default function FlashcardStudy({ cards: initialCards, deckId }: { cards:
       const delay = Math.max(1000, nextDue - now);
 
       if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(checkWaitingPool, delay);
+      timerRef.current = setTimeout(() => checkWaitingPoolRef.current(), delay);
     }
 
     return () => {
@@ -210,6 +250,7 @@ export default function FlashcardStudy({ cards: initialCards, deckId }: { cards:
   // ── Waiting Screen ──
   if (isWaitingForCards) {
     const nearestDue = Math.min(...waitingPool.map(wc => wc.dueAt));
+    // eslint-disable-next-line react-hooks/purity
     const secondsLeft = Math.max(0, Math.ceil((nearestDue - Date.now()) / 1000));
 
     return (
@@ -262,8 +303,8 @@ export default function FlashcardStudy({ cards: initialCards, deckId }: { cards:
 
       {/* Flashcard Area */}
       <div 
-        className="w-full h-[400px] relative perspective-1000 cursor-pointer group mb-10"
-        onClick={() => !isFlipped && setIsFlipped(true)}
+        className="w-full h-[460px] relative perspective-1000 cursor-pointer group mb-10"
+        onClick={() => setIsFlipped(prev => !prev)}
       >
         <motion.div
           className="w-full h-full relative preserve-3d"
@@ -271,24 +312,33 @@ export default function FlashcardStudy({ cards: initialCards, deckId }: { cards:
           transition={{ duration: 0.5, type: "spring", stiffness: 200, damping: 20 }}
         >
           {/* Front */}
-          <div className="absolute w-full h-full backface-hidden flex items-center justify-center p-12 bg-white/80 backdrop-blur-3xl border border-slate-100 shadow-[0_20px_60px_-15px_rgba(79,70,229,0.15)] rounded-[2.5rem] overflow-y-auto">
-            <h2 
-              className="text-4xl md:text-5xl font-black text-center text-slate-900 tracking-tight leading-tight"
-              dangerouslySetInnerHTML={{ __html: currentCard.front }}
-            />
+          <div className="absolute w-full h-full backface-hidden flex flex-col pt-12 pb-8 px-8 bg-white/80 backdrop-blur-3xl border border-slate-100 shadow-[0_20px_60px_-15px_rgba(79,70,229,0.15)] rounded-[2.5rem] overflow-y-auto">
+            <div className="flex-grow flex flex-col justify-center items-center">
+              <h2 
+                className="text-4xl md:text-5xl font-black text-center text-slate-900 tracking-tight leading-tight"
+                dangerouslySetInnerHTML={{ __html: currentCard.front }}
+              />
+            </div>
             {!isFlipped && (
-              <p className="absolute bottom-8 text-sm font-bold text-indigo-400 opacity-60 group-hover:opacity-100 transition-opacity tracking-widest uppercase">
+              <p className="text-center text-sm font-bold text-indigo-400 opacity-60 group-hover:opacity-100 transition-opacity tracking-widest uppercase mt-4">
                 Tap to flip
               </p>
             )}
           </div>
           
           {/* Back */}
-          <div className="absolute w-full h-full backface-hidden rotate-y-180 flex items-center justify-center p-12 bg-gradient-to-br from-indigo-50/90 to-cyan-50/90 backdrop-blur-3xl border border-indigo-100 shadow-[0_20px_60px_-15px_rgba(79,70,229,0.15)] rounded-[2.5rem] overflow-y-auto">
-            <h2 
-              className="text-3xl md:text-4xl font-bold text-center text-slate-800 whitespace-pre-wrap leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: currentCard.back }}
-            />
+          <div className="absolute w-full h-full backface-hidden rotate-y-180 flex flex-col pt-12 pb-8 px-8 bg-gradient-to-br from-indigo-50/90 to-cyan-50/90 backdrop-blur-3xl border border-indigo-100 shadow-[0_20px_60px_-15px_rgba(79,70,229,0.15)] rounded-[2.5rem] overflow-y-auto">
+            <div className="flex-grow flex flex-col justify-center items-center">
+              <h2 
+                className="text-3xl md:text-4xl font-bold text-center text-slate-800 whitespace-pre-wrap leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: currentCard.back }}
+              />
+            </div>
+            {isFlipped && (
+              <p className="text-center text-sm font-bold text-indigo-400 opacity-60 group-hover:opacity-100 transition-opacity tracking-widest uppercase mt-4">
+                Tap to flip back
+              </p>
+            )}
           </div>
         </motion.div>
       </div>
@@ -361,10 +411,12 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function CountdownTimer({ targetTime, onComplete }: { targetTime: number; onComplete: () => void }) {
+  // eslint-disable-next-line react-hooks/purity
   const [secondsLeft, setSecondsLeft] = useState(Math.max(0, Math.ceil((targetTime - Date.now()) / 1000)));
 
   useEffect(() => {
     const interval = setInterval(() => {
+      // eslint-disable-next-line react-hooks/purity
       const remaining = Math.max(0, Math.ceil((targetTime - Date.now()) / 1000));
       setSecondsLeft(remaining);
       if (remaining <= 0) {

@@ -3,14 +3,76 @@
 import { revalidatePath } from "next/cache";
 import { calculateAnkiReview, getButtonHints as calcButtonHints, type ReviewAction, type CardState, type ButtonHints } from "@/lib/srs";
 import { prisma } from "@/lib/db/prisma";
-import { Prisma } from "@prisma/client";
+import { Prisma, Flashcard } from "@prisma/client";
 
-export async function getDueCards(deckId: string) {
+export async function getDueCards(deckId: string, userId: string) {
   const now = new Date();
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
 
-  // 1. Get Deck limits
+  // 1. Check if active StudySession exists
+  const activeSession = await prisma.studySession.findUnique({
+    where: {
+      userId_deckId: { userId, deckId }
+    },
+    include: {
+      cards: {
+        include: { card: true },
+        orderBy: { orderIndex: "asc" }
+      }
+    }
+  });
+
+  if (activeSession) {
+    // Check if any waiting pool cards have become due, and if so, update their dueAt to null
+    const dueIntradayCards = activeSession.cards.filter(c => c.dueAt && c.dueAt <= now);
+    if (dueIntradayCards.length > 0) {
+      await prisma.studySessionCard.updateMany({
+        where: {
+          id: { in: dueIntradayCards.map(c => c.id) }
+        },
+        data: { dueAt: null }
+      });
+    }
+
+    // Reload cards to reflect any database updates
+    const refreshedCards = await prisma.studySessionCard.findMany({
+      where: { sessionId: activeSession.id },
+      include: { card: true },
+      orderBy: { orderIndex: "asc" }
+    });
+
+    const queue = refreshedCards
+      .filter(c => !c.dueAt)
+      .map(c => ({
+        ...c.card,
+        status: c.card.status,
+        stepIndex: c.card.stepIndex,
+        interval: c.card.interval,
+        repetition: c.card.repetition,
+        easinessFactor: c.card.easinessFactor,
+        nextReviewDate: c.card.nextReviewDate
+      }));
+
+    const waitingPool = refreshedCards
+      .filter(c => c.dueAt && c.dueAt > now)
+      .map(c => ({
+        card: {
+          ...c.card,
+          status: c.card.status,
+          stepIndex: c.card.stepIndex,
+          interval: c.card.interval,
+          repetition: c.card.repetition,
+          easinessFactor: c.card.easinessFactor,
+          nextReviewDate: c.card.nextReviewDate
+        },
+        dueAt: c.dueAt!.getTime()
+      }));
+
+    return { queue, waitingPool };
+  }
+
+  // 2. No active session, get Deck limits
   const deck = await prisma.deck.findUnique({
     where: { id: deckId },
     select: { maxNewCardsPerDay: true, maxReviewsPerDay: true },
@@ -20,7 +82,7 @@ export async function getDueCards(deckId: string) {
     throw new Error("Deck not found");
   }
 
-  // 2. Count studied today from CardReviewLog
+  // 3. Count studied today from CardReviewLog
   const logs = await prisma.cardReviewLog.findMany({
     where: {
       deckId,
@@ -47,7 +109,32 @@ export async function getDueCards(deckId: string) {
   const remainingNew = Math.max(0, deck.maxNewCardsPerDay - newStudiedToday);
   const remainingReviews = Math.max(0, deck.maxReviewsPerDay - reviewsStudiedToday);
 
-  // 3. Fetch due new cards
+  // 4. Fetch due learning/relearning cards (exempt from daily reviews limit!)
+  const learningCards = await prisma.flashcard.findMany({
+    where: {
+      deckId,
+      status: { in: ["LEARNING", "RELEARNING"] },
+      nextReviewDate: {
+        lte: now,
+      },
+    },
+    orderBy: { nextReviewDate: "asc" },
+  });
+
+  // 5. Fetch due review cards (limited by daily reviews limit)
+  const reviewCards = await prisma.flashcard.findMany({
+    where: {
+      deckId,
+      status: "REVIEW",
+      nextReviewDate: {
+        lte: now,
+      },
+    },
+    orderBy: { nextReviewDate: "asc" },
+    take: remainingReviews,
+  });
+
+  // 6. Fetch due new cards
   const newCards = await prisma.flashcard.findMany({
     where: {
       deckId,
@@ -60,31 +147,44 @@ export async function getDueCards(deckId: string) {
     take: remainingNew,
   });
 
-  // 4. Fetch due learning/review/relearning cards
-  const reviewCards = await prisma.flashcard.findMany({
-    where: {
-      deckId,
-      status: {
-        not: "NEW",
-      },
-      nextReviewDate: {
-        lte: now,
-      },
-    },
-    orderBy: { nextReviewDate: "asc" },
-    take: remainingReviews,
-  });
-
-  // 5. Merge and return sorted by nextReviewDate
-  const mergedCards = [...newCards, ...reviewCards];
+  // 7. Merge and sort by nextReviewDate
+  const mergedCards = [...learningCards, ...reviewCards, ...newCards];
   mergedCards.sort((a, b) => a.nextReviewDate.getTime() - b.nextReviewDate.getTime());
 
-  return mergedCards;
+  if (mergedCards.length > 0) {
+    // Create new StudySession in DB
+    const session = await prisma.studySession.create({
+      data: {
+        userId,
+        deckId,
+        currentIndex: 0
+      }
+    });
+
+    await prisma.studySessionCard.createMany({
+      data: mergedCards.map((c, i) => ({
+        sessionId: session.id,
+        cardId: c.id,
+        dueAt: null,
+        orderIndex: i
+      }))
+    });
+  }
+
+  return {
+    queue: mergedCards,
+    waitingPool: []
+  };
 }
 
 export async function reviewCard(cardId: string, action: ReviewAction) {
   const card = await prisma.flashcard.findUnique({
     where: { id: cardId },
+    include: {
+      studySessionCards: {
+        include: { session: true }
+      }
+    }
   });
 
   if (!card) {
@@ -102,34 +202,80 @@ export async function reviewCard(cardId: string, action: ReviewAction) {
 
   const result = calculateAnkiReview(cardState, action);
 
-  // Log the review in database
-  await prisma.cardReviewLog.create({
-    data: {
-      cardId,
-      deckId: card.deckId,
-      status: card.status,
-      action,
-    },
-  });
+  let updatedCard: Flashcard | null = null;
 
-  const updatedCard = await prisma.flashcard.update({
-    where: { id: cardId },
-    data: {
-      status: result.status,
-      stepIndex: result.stepIndex,
-      interval: result.interval,
-      repetition: result.repetition,
-      easinessFactor: result.easinessFactor,
-      nextReviewDate: result.nextReviewDate,
-    },
+  await prisma.$transaction(async (tx) => {
+    // 1. Log the review in database
+    await tx.cardReviewLog.create({
+      data: {
+        cardId,
+        deckId: card.deckId,
+        status: card.status,
+        action,
+      },
+    });
+
+    // 2. Update the main Flashcard
+    updatedCard = await tx.flashcard.update({
+      where: { id: cardId },
+      data: {
+        status: result.status,
+        stepIndex: result.stepIndex,
+        interval: result.interval,
+        repetition: result.repetition,
+        easinessFactor: result.easinessFactor,
+        nextReviewDate: result.nextReviewDate,
+      },
+    });
+
+    // 3. Update StudySessionCard if session exists
+    const sessionCard = card.studySessionCards[0];
+    if (sessionCard) {
+      if (result.isIntraDay) {
+        // Find next order index to push to end
+        const maxOrderIndexResult = await tx.studySessionCard.aggregate({
+          where: { sessionId: sessionCard.sessionId },
+          _max: { orderIndex: true }
+        });
+        const nextOrderIndex = (maxOrderIndexResult._max.orderIndex ?? 0) + 1;
+
+        await tx.studySessionCard.update({
+          where: { id: sessionCard.id },
+          data: {
+            dueAt: result.nextReviewDate,
+            orderIndex: nextOrderIndex
+          }
+        });
+      } else {
+        // Graduates / moves out of intraday -> remove from study session queue
+        await tx.studySessionCard.delete({
+          where: { id: sessionCard.id }
+        });
+      }
+
+      // Check if session has remaining cards
+      const remainingCount = await tx.studySessionCard.count({
+        where: { sessionId: sessionCard.sessionId }
+      });
+
+      if (remainingCount === 0) {
+        await tx.studySession.delete({
+          where: { id: sessionCard.sessionId }
+        });
+      }
+    }
   });
 
   revalidatePath(`/decks`);
   revalidatePath(`/decks/${card.deckId}`);
   revalidatePath(`/decks/${card.deckId}/study`);
 
+  if (!updatedCard) {
+    throw new Error("Failed to update card");
+  }
+
   return {
-    ...updatedCard,
+    ...(updatedCard as Flashcard),
     isIntraDay: result.isIntraDay,
     dueInMs: result.nextReviewDate.getTime() - Date.now(),
   };
