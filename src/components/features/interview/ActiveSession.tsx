@@ -77,11 +77,49 @@ export function ActiveSession({ selectedSet, onFinish }: Props) {
   const [speechRate, setSpeechRate] = useState(0.8);
   const [showQuestionText, setShowQuestionText] = useState(false);
   const [sessionStatus, setSessionStatus] = useState<'initializing' | 'speaking' | 'listening' | 'processing' | 'feedback'>('initializing');
+  const [jpVoices, setJpVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [selectedVoiceName, setSelectedVoiceName] = useState<string>('');
 
   useEffect(() => {
     initSession();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Load available Japanese voices for speech synthesis
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+
+    const loadVoices = () => {
+      const allVoices = window.speechSynthesis.getVoices();
+      const jp = allVoices.filter(v => v.lang === 'ja-JP' || v.lang === 'ja_JP' || v.lang.startsWith('ja'));
+      setJpVoices(jp);
+
+      if (jp.length > 0) {
+        const savedVoice = localStorage.getItem('selected_jp_voice');
+        const defaultVoice = jp.find(v => v.name === savedVoice) || jp[0];
+        setSelectedVoiceName(defaultVoice.name);
+      }
+    };
+
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = null;
+      }
+    };
+  }, []);
+
+  const handleVoiceChange = (voiceName: string) => {
+    setSelectedVoiceName(voiceName);
+    localStorage.setItem('selected_jp_voice', voiceName);
+    
+    // Stop any ongoing speech when switching voice
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+  };
 
   const shuffleArray = (array: Question[]) => {
     const arr = [...array];
@@ -124,9 +162,15 @@ export function ActiveSession({ selectedSet, onFinish }: Props) {
         setSessionStatus('listening');
       };
 
-      const voices = window.speechSynthesis.getVoices();
-      const jpVoice = voices.find(v => v.lang === 'ja-JP' || v.lang === 'ja_JP');
-      if (jpVoice) utterance.voice = jpVoice;
+      // Select active voice with synchronous fallback if state is not ready yet
+      let activeVoice = jpVoices.find(v => v.name === selectedVoiceName) || jpVoices[0];
+      if (!activeVoice) {
+        const allVoices = window.speechSynthesis.getVoices();
+        const jp = allVoices.filter(v => v.lang === 'ja-JP' || v.lang === 'ja_JP' || v.lang.startsWith('ja'));
+        activeVoice = jp.find(v => v.name === selectedVoiceName) || jp[0];
+      }
+      
+      if (activeVoice) utterance.voice = activeVoice;
       window.speechSynthesis.speak(utterance);
     } else {
       setSessionStatus('listening');
@@ -138,9 +182,16 @@ export function ActiveSession({ selectedSet, onFinish }: Props) {
       const activeUtterance = new SpeechSynthesisUtterance(text);
       activeUtterance.lang = 'ja-JP';
       activeUtterance.rate = speechRate;
-      const voices = window.speechSynthesis.getVoices();
-      const jpVoice = voices.find(v => v.lang === 'ja-JP' || v.lang === 'ja_JP');
-      if (jpVoice) activeUtterance.voice = jpVoice;
+      
+      // Select active voice with synchronous fallback
+      let activeVoice = jpVoices.find(v => v.name === selectedVoiceName) || jpVoices[0];
+      if (!activeVoice) {
+        const allVoices = window.speechSynthesis.getVoices();
+        const jp = allVoices.filter(v => v.lang === 'ja-JP' || v.lang === 'ja_JP' || v.lang.startsWith('ja'));
+        activeVoice = jp.find(v => v.name === selectedVoiceName) || jp[0];
+      }
+      
+      if (activeVoice) activeUtterance.voice = activeVoice;
       window.speechSynthesis.speak(activeUtterance);
     }
   };
@@ -403,7 +454,7 @@ export function ActiveSession({ selectedSet, onFinish }: Props) {
             {/* Left Side: Question Display, Controls, Next Question Button */}
             <div className="lg:col-span-4 space-y-6 flex flex-col justify-between min-h-[350px]">
               <div className="space-y-5">
-                <div className="bg-white/80 backdrop-blur-md border border-slate-100 shadow-lg shadow-slate-100/50 rounded-3xl p-6 relative overflow-hidden flex flex-col justify-between min-h-[160px]">
+                <div className="bg-white/80 backdrop-blur-md border border-slate-100 shadow-lg shadow-slate-100/50 rounded-3xl p-6 relative overflow-hidden flex flex-col justify-between min-h-[140px]">
                   <div>
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Current Question</span>
                     <h2 className="text-xl md:text-2xl font-black text-slate-800 leading-normal tracking-wide text-center py-4">
@@ -435,6 +486,25 @@ export function ActiveSession({ selectedSet, onFinish }: Props) {
                         className="w-24 accent-indigo-600 cursor-pointer"
                       />
                     </div>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5 w-full pt-3 border-t border-slate-100">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block px-1">Voice Accent</span>
+                    <select
+                      value={selectedVoiceName}
+                      onChange={(e) => handleVoiceChange(e.target.value)}
+                      className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 cursor-pointer"
+                    >
+                      {jpVoices.length === 0 ? (
+                        <option value="">Default System Voice</option>
+                      ) : (
+                        jpVoices.map((voice) => (
+                          <option key={voice.name} value={voice.name}>
+                            {voice.name.replace(/Microsoft |Google /g, '')} {voice.localService ? '(Local)' : ''}
+                          </option>
+                        ))
+                      )}
+                    </select>
                   </div>
                 </div>
               </div>
@@ -490,19 +560,19 @@ export function ActiveSession({ selectedSet, onFinish }: Props) {
               </button>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 justify-center pt-2">
+            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 justify-center pt-2 w-full max-w-xl">
               <Button 
                 variant="outline" 
                 size="lg" 
                 disabled={sessionStatus === 'processing'}
                 onClick={() => speak(currentQuestion.content)} 
-                className="rounded-full h-12 px-6 border-indigo-200/50 hover:bg-indigo-50/50 hover:text-indigo-900 transition-all text-indigo-600 bg-white/40 backdrop-blur-sm disabled:opacity-50 cursor-pointer text-sm font-bold"
+                className="rounded-full h-12 px-6 border-indigo-200/50 hover:bg-indigo-50/50 hover:text-indigo-900 transition-all text-indigo-600 bg-white/40 backdrop-blur-sm disabled:opacity-50 cursor-pointer text-sm font-bold shrink-0"
               >
-                <Play className="w-4 h-4 mr-2.5 fill-current" /> Replay Question
+                <Play className="w-4 h-4 mr-2.5 fill-current" /> Replay
               </Button>
               
-              <div className="flex items-center gap-3 bg-white/40 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/60 shadow-sm" title="Speech rate">
-                <span className="text-xs font-bold text-slate-500 w-10 text-center">{speechRate}x</span>
+              <div className="flex items-center gap-3 bg-white/40 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/60 shadow-sm justify-between animate-in fade-in" title="Speech rate">
+                <span className="text-xs font-bold text-slate-500 w-8 text-center">{speechRate}x</span>
                 <input 
                   type="range" 
                   min="0.5" 
@@ -510,8 +580,26 @@ export function ActiveSession({ selectedSet, onFinish }: Props) {
                   step="0.1" 
                   value={speechRate}
                   onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
-                  className="w-24 accent-indigo-600 cursor-pointer"
+                  className="w-20 md:w-24 accent-indigo-600 cursor-pointer"
                 />
+              </div>
+
+              <div className="bg-white/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/60 shadow-sm flex items-center justify-between min-w-[150px] max-w-[220px]" title="Japanese voice selector">
+                <select
+                  value={selectedVoiceName}
+                  onChange={(e) => handleVoiceChange(e.target.value)}
+                  className="bg-transparent text-xs font-bold text-slate-700 outline-none w-full cursor-pointer pr-1"
+                >
+                  {jpVoices.length === 0 ? (
+                    <option value="">Default Voice</option>
+                  ) : (
+                    jpVoices.map((voice) => (
+                      <option key={voice.name} value={voice.name} className="bg-white text-slate-700 text-xs">
+                        {voice.name.replace(/Microsoft |Google /g, '')}
+                      </option>
+                    ))
+                  )}
+                </select>
               </div>
             </div>
 
