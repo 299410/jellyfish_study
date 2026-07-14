@@ -31,7 +31,7 @@ export class GeminiProvider implements TextChatAdapter, TTSAdapter {
     const base64Data = buffer.toString("base64");
 
     const response = await this.ai.models.generateContent({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-3.1-flash-lite',
       contents: [
         {
           role: 'user',
@@ -101,7 +101,7 @@ Với mỗi tin nhắn của học viên (bằng tiếng Nhật), bạn phải t
     contents.push({ role: 'user', parts: [{ text: message }] });
 
     const responseStream = await this.ai.models.generateContentStream({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-3.1-flash-lite',
       contents: contents,
       config: {
         systemInstruction: systemInstruction,
