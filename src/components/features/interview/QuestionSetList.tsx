@@ -293,7 +293,7 @@ export function QuestionSetList({ onStartSession }: Props) {
               {/* Tab 1: Structured Questions List */}
               {activeTab === 'structured' && (
                 <div className="flex-1 flex flex-col overflow-hidden">
-                  <ScrollArea className="flex-1 pr-2">
+                  <ScrollArea className="h-[320px] pr-2">
                     <div className="space-y-3 pb-4">
                       {questionsList.length === 0 && (
                         <div className="text-center py-10 text-slate-400 italic text-sm">
