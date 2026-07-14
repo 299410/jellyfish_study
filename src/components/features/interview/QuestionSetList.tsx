@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Plus, Pencil, Trash2, X, Save, Briefcase, ListTodo, Clipboard, Play } from 'lucide-react';
 
 export interface Question {
@@ -293,32 +292,30 @@ export function QuestionSetList({ onStartSession }: Props) {
               {/* Tab 1: Structured Questions List */}
               {activeTab === 'structured' && (
                 <div className="flex-1 flex flex-col overflow-hidden">
-                  <ScrollArea className="flex-1 pr-2">
-                    <div className="space-y-3 pb-4">
-                      {questionsList.length === 0 && (
-                        <div className="text-center py-10 text-slate-400 italic text-sm">
-                          No questions added yet. Use the input below to add questions.
-                        </div>
-                      )}
-                      {questionsList.map((q, idx) => (
-                        <div key={idx} className="flex items-center gap-3 bg-slate-50/50 border border-slate-100 p-3 rounded-2xl animate-in slide-in-from-bottom-2 duration-150">
-                          <span className="w-6 text-center text-xs font-bold text-slate-400">{idx + 1}</span>
-                          <input 
-                            value={q}
-                            onChange={e => handleEditQuestionInline(idx, e.target.value)}
-                            className="flex-1 bg-transparent border-transparent focus:border-indigo-400 focus:outline-none text-slate-700 font-medium text-sm"
-                          />
-                          <button
-                            onClick={() => handleRemoveQuestion(idx)}
-                            className="text-slate-300 hover:text-rose-500 transition-colors p-1.5 hover:bg-rose-50 rounded-full cursor-pointer"
-                            title="Remove Question"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
+                  <div className="h-[320px] overflow-y-auto pr-1 space-y-3 pb-4 scrollbar-thin">
+                    {questionsList.length === 0 && (
+                      <div className="text-center py-10 text-slate-400 italic text-sm">
+                        No questions added yet. Use the input below to add questions.
+                      </div>
+                    )}
+                    {questionsList.map((q, idx) => (
+                      <div key={idx} className="flex items-center gap-3 bg-slate-50/50 border border-slate-100 p-3 rounded-2xl">
+                        <span className="w-6 text-center text-xs font-bold text-slate-400">{idx + 1}</span>
+                        <input 
+                          value={q}
+                          onChange={e => handleEditQuestionInline(idx, e.target.value)}
+                          className="flex-1 bg-transparent border-transparent focus:border-indigo-400 focus:outline-none text-slate-700 font-medium text-sm"
+                        />
+                        <button
+                          onClick={() => handleRemoveQuestion(idx)}
+                          className="text-slate-300 hover:text-rose-500 transition-colors p-1.5 hover:bg-rose-50 rounded-full cursor-pointer"
+                          title="Remove Question"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
 
                   {/* Add Question input bar */}
                   <div className="flex items-center gap-3 pt-4 border-t border-slate-100 bg-white">
