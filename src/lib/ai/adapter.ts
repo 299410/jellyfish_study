@@ -9,6 +9,7 @@ export interface ChatMessage {
 export interface TextChatAdapter {
   transcribeAudio(audioFile: Blob, mimeType: string): Promise<string>;
   generateTeacherResponse(message: string, history: ChatMessage[], mode?: 'chat' | 'interview'): Promise<ReadableStream>;
+  evaluateWriting(topic: string, text: string): Promise<any>;
 }
 
 export interface TTSAdapter {
@@ -126,6 +127,37 @@ Với mỗi tin nhắn của học viên (bằng tiếng Nhật), bạn phải t
     });
 
     return readable;
+  }
+
+  /**
+   * Evaluate Writing and return JSON structured data
+   */
+  async evaluateWriting(topic: string, text: string): Promise<any> {
+    const systemInstruction = `Bạn là Giám khảo chấm thi viết JLPT (Level N5 đến N3).
+Học viên được giao một Yêu cầu/Mẫu ngữ pháp (nếu có) và Bài viết.
+Nhiệm vụ: 
+1. Kiểm tra bài viết có sử dụng đúng Yêu cầu/Mẫu ngữ pháp không.
+2. Bắt lỗi sai ngữ pháp, trợ từ, từ vựng (chỉ giới hạn ở mức N5-N3).
+3. Trả về JSON theo Schema gồm: score, overall_comment, errors, rewritten_text.`;
+
+    const userPrompt = `Yêu cầu/Mẫu ngữ pháp: ${topic || 'Không có'}
+Bài viết: ${text}`;
+
+    const response = await this.ai.models.generateContent({
+      model: 'gemini-3.1-flash-lite',
+      contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+      config: {
+        systemInstruction: systemInstruction,
+        responseMimeType: 'application/json',
+      }
+    });
+
+    try {
+      return JSON.parse(response.text || '{}');
+    } catch (e) {
+      console.error('Failed to parse AI response to JSON', e);
+      return { score: 0, overall_comment: 'Lỗi khi chấm điểm', errors: [], rewritten_text: '' };
+    }
   }
 
   /**
