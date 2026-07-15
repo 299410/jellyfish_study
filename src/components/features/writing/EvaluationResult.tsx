@@ -53,7 +53,7 @@ export function EvaluationResult({ data, onRetry }: EvaluationResultProps) {
 
         {/* Overall Comment */}
         <div className="flex-1 text-center md:text-left space-y-2">
-          <h3 className="text-lg font-bold text-slate-800">Đánh giá chung</h3>
+          <h3 className="text-lg font-bold text-slate-800">Overall Assessment</h3>
           <p className="text-slate-600 leading-relaxed text-base">
             {data.overall_comment}
           </p>
@@ -61,11 +61,11 @@ export function EvaluationResult({ data, onRetry }: EvaluationResultProps) {
           <div className="pt-2">
             {data.errors.length === 0 ? (
               <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-0 px-3 py-1">
-                <CheckCircle2 className="w-4 h-4 mr-1.5" /> Xuất sắc! Không có lỗi sai
+                <CheckCircle2 className="w-4 h-4 mr-1.5" /> Excellent! No errors found
               </Badge>
             ) : (
               <Badge className="bg-rose-100 text-rose-700 hover:bg-rose-200 border-0 px-3 py-1">
-                <AlertTriangle className="w-4 h-4 mr-1.5" /> Phát hiện {data.errors.length} lỗi
+                <AlertTriangle className="w-4 h-4 mr-1.5" /> Found {data.errors.length} errors
               </Badge>
             )}
           </div>
@@ -76,7 +76,7 @@ export function EvaluationResult({ data, onRetry }: EvaluationResultProps) {
       {data.errors.length > 0 && (
         <div className="space-y-4">
           <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <XCircle className="w-5 h-5 text-rose-500" /> Chi tiết lỗi sai
+            <XCircle className="w-5 h-5 text-rose-500" /> Error Details
           </h3>
           
           <div className="grid gap-4">
@@ -84,7 +84,7 @@ export function EvaluationResult({ data, onRetry }: EvaluationResultProps) {
               <Card key={idx} className="border border-slate-100 shadow-sm overflow-hidden rounded-2xl">
                 <CardContent className="p-0">
                   <div className="bg-rose-50/50 p-4 border-b border-rose-100/50">
-                    <p className="text-sm font-medium text-slate-500 mb-1">Câu gốc:</p>
+                    <p className="text-sm font-medium text-slate-500 mb-1">Original:</p>
                     <p className="text-slate-800 font-medium">
                       {err.original_sentence.split(err.error_phrase).map((part, i, arr) => (
                         <React.Fragment key={i}>
@@ -105,7 +105,7 @@ export function EvaluationResult({ data, onRetry }: EvaluationResultProps) {
                         <CheckCircle2 className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Sửa lại</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Correction</p>
                         <p className="text-emerald-700 font-bold text-base bg-emerald-50 px-2 py-1 rounded inline-block">
                           {err.correction}
                         </p>
@@ -117,7 +117,7 @@ export function EvaluationResult({ data, onRetry }: EvaluationResultProps) {
                         <AlertTriangle className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Giải thích</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Explanation</p>
                         <p className="text-slate-600 text-sm leading-relaxed">
                           {err.explanation}
                         </p>
@@ -134,7 +134,7 @@ export function EvaluationResult({ data, onRetry }: EvaluationResultProps) {
       {/* Rewritten Text */}
       <div className="space-y-4 pt-4 border-t border-slate-100">
         <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-          <Quote className="w-5 h-5 text-indigo-500" /> Bản viết mẫu (Tham khảo)
+          <Quote className="w-5 h-5 text-indigo-500" /> Sample Answer (Reference)
         </h3>
         <div className="bg-gradient-to-br from-indigo-50 to-white border border-indigo-100 p-6 rounded-2xl shadow-inner relative">
           <Quote className="absolute top-4 right-4 w-12 h-12 text-indigo-500/10" />
@@ -151,7 +151,7 @@ export function EvaluationResult({ data, onRetry }: EvaluationResultProps) {
           onClick={onRetry}
           className="rounded-2xl px-6 border-slate-200 text-slate-600 hover:bg-slate-50 transition-all hover:scale-105"
         >
-          <RefreshCw className="w-4 h-4 mr-2" /> Viết bài khác
+          <RefreshCw className="w-4 h-4 mr-2" /> Write another
         </Button>
       </div>
 

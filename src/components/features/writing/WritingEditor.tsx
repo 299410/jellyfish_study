@@ -23,10 +23,10 @@ export function WritingEditor({ onEvaluate, isEvaluating }: WritingEditorProps) 
       {/* Grammar / Topic Input */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-semibold text-slate-600 flex items-center gap-2">
-          Yêu cầu đề bài / Mẫu ngữ pháp (Tùy chọn)
+          Topic / Grammar Pattern (Optional)
         </label>
         <Textarea 
-          placeholder="Ví dụ: Dùng mẫu câu ~たり~たりします để nói về cuối tuần..."
+          placeholder="Example: Use ~たり~たりします to talk about your weekend..."
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
           className="resize-none border-slate-200 bg-white/60 focus-visible:ring-indigo-400 rounded-xl p-3 text-sm shadow-sm"
@@ -38,18 +38,18 @@ export function WritingEditor({ onEvaluate, isEvaluating }: WritingEditorProps) 
       {/* Main Writing Input */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-semibold text-indigo-700 flex items-center gap-2">
-          <PenTool className="w-4 h-4" /> Bài viết của bạn
+          <PenTool className="w-4 h-4" /> Your Writing
         </label>
         <div className="relative">
           <Textarea 
-            placeholder="Nhập đoạn văn tiếng Nhật của bạn vào đây..."
+            placeholder="Enter your Japanese text here..."
             value={text}
             onChange={(e) => setText(e.target.value)}
             className="resize-none border-indigo-100 bg-white/80 focus-visible:ring-indigo-500 rounded-2xl p-5 text-base shadow-inner min-h-[200px]"
             disabled={isEvaluating}
           />
           <div className="absolute bottom-3 right-4 text-xs font-medium text-slate-400">
-            {charCount} ký tự
+            {charCount} characters
           </div>
         </div>
       </div>
@@ -63,11 +63,11 @@ export function WritingEditor({ onEvaluate, isEvaluating }: WritingEditorProps) 
           {isEvaluating ? (
             <span className="flex items-center gap-2">
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              Đang chấm bài...
+              Evaluating...
             </span>
           ) : (
             <span className="flex items-center gap-2 text-base font-bold">
-              <CheckCircle2 className="w-5 h-5" /> Chấm điểm
+              <CheckCircle2 className="w-5 h-5" /> Evaluate
             </span>
           )}
         </Button>

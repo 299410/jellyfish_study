@@ -27,7 +27,7 @@ export default function WritingPage() {
       setEvaluation(data);
     } catch (error) {
       console.error(error);
-      alert('Đã có lỗi xảy ra khi chấm bài. Vui lòng thử lại sau.');
+      alert('An error occurred while evaluating. Please try again.');
     } finally {
       setIsEvaluating(false);
     }
@@ -53,10 +53,10 @@ export default function WritingPage() {
             </div>
             <div>
               <span className="bg-gradient-to-r from-indigo-600 to-indigo-400 bg-clip-text text-transparent block">
-                Luyện Viết JLPT
+                JLPT Writing Practice
               </span>
               <span className="text-sm font-medium text-slate-500 block mt-1">
-                AI Chấm điểm ngữ pháp N5 - N3
+                AI Grammar Check (N5 - N3)
               </span>
             </div>
           </CardTitle>
