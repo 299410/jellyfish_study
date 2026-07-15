@@ -3,13 +3,13 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Home, MessageCircle, Mic, Layers, LayoutDashboard } from 'lucide-react';
+import { Home, Mic, Layers, LayoutDashboard, PenTool } from 'lucide-react';
 
 const menuItems = [
   { icon: Home, label: 'Home', href: '/' },
   { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
   { icon: Layers, label: 'Flashcards', href: '/decks' },
-  { icon: MessageCircle, label: 'Free Chat', href: '/free-chat' },
+  { icon: PenTool, label: 'Writing', href: '/writing' },
   { icon: Mic, label: 'Interview', href: '/interview' },
 ];
 

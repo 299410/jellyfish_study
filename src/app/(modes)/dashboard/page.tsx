@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useUserId, useUserName } from "@/components/UserOnboarding";
 import { getDashboardStats } from "@/app/actions/activity";
 import { getDailyQuote, type Quote } from "@/lib/quotes";
-import { Sparkles, Flame, Clock, Calendar, ArrowRight, MessageSquare, Mic, Layers, Activity } from "lucide-react";
+import { Sparkles, Flame, Clock, Calendar, ArrowRight, MessageSquare, Mic, Layers, Activity, PenTool } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -317,18 +317,18 @@ export default function DashboardPage() {
                   </div>
                 </Link>
 
-                {/* Free Chat action */}
-                <Link href="/free-chat" className="flex flex-col justify-between p-5 rounded-2xl bg-white/60 border border-slate-100 hover:border-blue-200/50 hover:bg-blue-50/30 hover:shadow-[0_8px_20px_rgba(59,130,246,0.04)] transition-all duration-300 group h-36">
+                {/* Writing action */}
+                <Link href="/writing" className="flex flex-col justify-between p-5 rounded-2xl bg-white/60 border border-slate-100 hover:border-indigo-200/50 hover:bg-indigo-50/30 hover:shadow-[0_8px_20px_rgba(79,70,229,0.04)] transition-all duration-300 group h-36">
                   <div className="space-y-3">
-                    <div className="w-10 h-10 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center shrink-0">
-                      <MessageSquare className="w-5.5 h-5.5" />
+                    <div className="w-10 h-10 bg-indigo-50 text-indigo-500 rounded-xl flex items-center justify-center shrink-0">
+                      <PenTool className="w-5.5 h-5.5" />
                     </div>
                     <div>
-                      <p className="text-base font-bold text-slate-800">Free Chat</p>
-                      <p className="text-[10px] text-slate-500 font-semibold mt-0.5">Reflex practice with AI</p>
+                      <p className="text-base font-bold text-slate-800">Writing</p>
+                      <p className="text-[10px] text-slate-500 font-semibold mt-0.5">Grammar & Writing check</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-blue-500 mt-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-500 mt-2">
                     Start practice <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </Link>
