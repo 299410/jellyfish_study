@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GeminiProvider, ChatMessage } from '@/lib/ai/adapter';
 
-const apiKey = process.env.GEMINI_API_KEY;
-
 export async function POST(req: NextRequest) {
   try {
+    const apiKey = req.headers.get('x-api-key');
+
     if (!apiKey) {
-      return NextResponse.json({ error: 'GEMINI_API_KEY is not configured' }, { status: 500 });
+      return NextResponse.json({ error: 'Missing API Key. Please configure it in Dashboard.' }, { status: 401 });
     }
 
     const body = await req.json();

@@ -11,15 +11,27 @@ export default function WritingPage() {
   const [isEvaluating, setIsEvaluating] = useState(false);
 
   const handleEvaluate = async (topic: string, text: string) => {
+    const apiKey = localStorage.getItem('user_gemini_api_key');
+    if (!apiKey) {
+      alert("Please configure your Gemini API Key in the Dashboard first.");
+      return;
+    }
+
     setIsEvaluating(true);
     try {
       const res = await fetch('/api/writing/evaluate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey 
+        },
         body: JSON.stringify({ topic, text }),
       });
 
       if (!res.ok) {
+        if (res.status === 401) {
+          throw new Error('Invalid or missing API Key. Please check your Dashboard settings.');
+        }
         throw new Error('Failed to evaluate writing');
       }
 
