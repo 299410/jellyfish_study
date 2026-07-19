@@ -133,12 +133,25 @@ Với mỗi tin nhắn của học viên (bằng tiếng Nhật), bạn phải t
    * Evaluate Writing and return JSON structured data
    */
   async evaluateWriting(topic: string, text: string): Promise<any> {
-    const systemInstruction = `Bạn là Giám khảo chấm thi viết JLPT (Level N5 đến N3).
+    const isInterview = topic.startsWith('Interview Question:');
+
+    const systemInstruction = isInterview 
+      ? `Bạn là Giám khảo phỏng vấn tiếng Nhật. Học viên đang chuẩn bị kịch bản trả lời phỏng vấn.
+Nhiệm vụ:
+1. Kiểm tra câu trả lời có phù hợp với câu hỏi phỏng vấn không.
+2. Sửa lỗi ngữ pháp, từ vựng và ĐẶC BIỆT chú trọng vào văn phong lịch sự (Keigo/Teineigo) dùng trong phỏng vấn.
+3. Trả về JSON theo Schema:
+- score: Điểm số (0-100)
+- overall_comment: Đánh giá chung (Tiếng Việt)
+- errors: Mảng các lỗi, mỗi lỗi gồm: original_sentence, error_phrase, correction, explanation.
+- rewritten_text: Câu trả lời mẫu hoàn hảo (Tiếng Nhật) kèm dịch nghĩa Tiếng Việt bên dưới.`
+      : `Bạn là Giám khảo chấm thi viết JLPT (Level N5 đến N3).
 Học viên được giao một Yêu cầu/Mẫu ngữ pháp (nếu có) và Bài viết.
 Nhiệm vụ: 
 1. Kiểm tra bài viết có sử dụng đúng Yêu cầu/Mẫu ngữ pháp không.
 2. Bắt lỗi sai ngữ pháp, trợ từ, từ vựng (chỉ giới hạn ở mức N5-N3).
-3. Trả về JSON theo Schema gồm: score, overall_comment, errors, rewritten_text.`;
+3. Trả về JSON theo Schema gồm: score, overall_comment, errors, rewritten_text.
+- errors là mảng object gồm: original_sentence, error_phrase, correction, explanation.`;
 
     const userPrompt = `Yêu cầu/Mẫu ngữ pháp: ${topic || 'Không có'}
 Bài viết: ${text}`;
