@@ -1,14 +1,31 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PenTool } from 'lucide-react';
 import { WritingEditor } from '@/components/features/writing/WritingEditor';
 import { EvaluationResult, EvaluationData } from '@/components/features/writing/EvaluationResult';
+import { QuestionSet } from '@/components/features/interview/QuestionSetList';
 
 export default function WritingPage() {
   const [evaluation, setEvaluation] = useState<EvaluationData | null>(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
+  const [questionSets, setQuestionSets] = useState<QuestionSet[]>([]);
+
+  useEffect(() => {
+    const fetchSets = async () => {
+      try {
+        const res = await fetch('/api/questionsets');
+        if (res.ok) {
+          const data = await res.json();
+          setQuestionSets(data);
+        }
+      } catch (error) {
+        console.error('Failed to load question sets:', error);
+      }
+    };
+    fetchSets();
+  }, []);
 
   const handleEvaluate = async (topic: string, text: string) => {
     const apiKey = localStorage.getItem('user_gemini_api_key');
@@ -79,6 +96,7 @@ export default function WritingPage() {
             <WritingEditor 
               onEvaluate={handleEvaluate} 
               isEvaluating={isEvaluating} 
+              questionSets={questionSets}
             />
           ) : (
             <EvaluationResult 
