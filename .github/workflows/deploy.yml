@@ -72,7 +72,7 @@ jobs:
             docker pull $IMAGE
 
             echo "🛠 Chạy Database Migration..."
-            docker run --rm --env-file /var/www/nihongo-reflex/.env $IMAGE npx prisma migrate deploy
+            docker run --rm --user root --env-file /var/www/nihongo-reflex/.env $IMAGE npx prisma@5.14.0 migrate deploy
 
             echo "🛑 Dừng và xóa Container cũ..."
             docker stop nihongo-reflex-app || true
