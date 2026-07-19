@@ -38,11 +38,20 @@ export default function QuizResultPage({ params }: { params: Promise<{ id: strin
   const handleExplain = async (q: any) => {
     if (explanations[q.id]) return; // already loaded
     
+    const apiKey = localStorage.getItem('user_gemini_api_key');
+    if (!apiKey) {
+      alert('Vui lòng cấu hình Gemini API Key trong phần Dashboard.');
+      return;
+    }
+
     setLoadingExpl(q.id);
     try {
       const res = await fetch('/api/quiz/explain', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey
+        },
         body: JSON.stringify({
           questionContent: q.content,
           options: q.options,
@@ -51,6 +60,11 @@ export default function QuizResultPage({ params }: { params: Promise<{ id: strin
         })
       });
       const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to get explanation');
+      }
+      
       setExplanations(prev => ({ ...prev, [q.id]: data.explanation }));
     } catch (err) {
       alert('Không thể tải giải thích từ AI');

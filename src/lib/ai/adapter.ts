@@ -178,7 +178,8 @@ Bài viết: ${text}`;
    */
   async parseQuizFromText(text: string): Promise<any> {
     const systemInstruction = `Bạn là một chuyên gia phân tích dữ liệu giáo dục.
-Nhiệm vụ: Trích xuất các câu hỏi trắc nghiệm từ đoạn text hỗn độn do người dùng cung cấp.
+Nhiệm vụ: Trích xuất TOÀN BỘ các câu hỏi trắc nghiệm từ đoạn text hỗn độn do người dùng cung cấp.
+QUAN TRỌNG: Bạn PHẢI trích xuất TẤT CẢ các câu hỏi có trong text, tuyệt đối KHÔNG ĐƯỢC lười biếng bỏ sót hay tóm tắt. Trích xuất cho đến câu hỏi cuối cùng.
 Bắt buộc trả về ĐÚNG định dạng JSON Schema sau, không thêm bất kỳ text nào khác:
 {
   "questions": [
@@ -204,6 +205,55 @@ Lưu ý: Nếu text không có đáp án đúng rõ ràng, hãy tự suy luận 
       return JSON.parse(response.text || '{"questions":[]}');
     } catch (e) {
       console.error('Failed to parse AI response to JSON for Quiz', e);
+      return { questions: [] };
+    }
+  }
+
+  /**
+   * Parse messy text from a PDF document into structured Quiz JSON
+   */
+  async parseQuizFromPdf(pdfBase64: string): Promise<any> {
+    const systemInstruction = `Bạn là một chuyên gia phân tích dữ liệu giáo dục.
+Nhiệm vụ: Trích xuất TOÀN BỘ các câu hỏi trắc nghiệm từ tài liệu PDF do người dùng cung cấp.
+QUAN TRỌNG: Bạn PHẢI trích xuất TẤT CẢ các câu hỏi có trong file, tuyệt đối KHÔNG ĐƯỢC lười biếng bỏ sót hay tóm tắt. Nếu file có 50 câu, phải trả về đủ 50 câu.
+Bắt buộc trả về ĐÚNG định dạng JSON Schema sau, không thêm bất kỳ text nào khác:
+{
+  "questions": [
+    {
+      "content": "Nội dung câu hỏi",
+      "options": ["A. Lựa chọn 1", "B. Lựa chọn 2", "C. Lựa chọn 3", "D. Lựa chọn 4"],
+      "correctAnswer": 0
+    }
+  ]
+}
+Lưu ý: Nếu không có đáp án đúng rõ ràng, hãy tự suy luận ra đáp án đúng nhất dựa trên kiến thức JLPT.`;
+
+    const response = await this.ai.models.generateContent({
+      model: 'gemini-3.1-flash-lite',
+      contents: [
+        { 
+          role: 'user', 
+          parts: [
+            { text: 'Hãy trích xuất toàn bộ bộ câu hỏi trắc nghiệm từ tài liệu PDF này.' },
+            {
+              inlineData: {
+                mimeType: 'application/pdf',
+                data: pdfBase64
+              }
+            }
+          ] 
+        }
+      ],
+      config: {
+        systemInstruction: systemInstruction,
+        responseMimeType: 'application/json',
+      }
+    });
+
+    try {
+      return JSON.parse(response.text || '{"questions":[]}');
+    } catch (e) {
+      console.error('Failed to parse AI response to JSON for PDF Quiz', e);
       return { questions: [] };
     }
   }
