@@ -7,6 +7,7 @@ import { getDailyQuote, type Quote } from "@/lib/quotes";
 import { Sparkles, Flame, Clock, Calendar, ArrowRight, MessageSquare, Mic, Layers, Activity, PenTool } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { ApiKeyManager } from "@/components/features/settings/ApiKeyManager";
 
 interface HeatmapDay {
   date: string;
@@ -352,6 +353,8 @@ export default function DashboardPage() {
               </div>
             </div>
 
+            {/* API Key Configuration - BYOK */}
+            <ApiKeyManager />
           </div>
 
           {/* RIGHT / SIDEBAR COLUMN (span 1) */}

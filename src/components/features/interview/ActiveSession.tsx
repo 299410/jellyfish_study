@@ -202,9 +202,21 @@ export function ActiveSession({ selectedSet, onFinish }: Props) {
     setSessionStatus('processing');
 
     try {
+      const apiKey = localStorage.getItem('user_gemini_api_key');
+      if (!apiKey) {
+        alert("Please configure your Gemini API Key in the Dashboard first.");
+        setSessionStatus('listening');
+        setIsProcessing(false);
+        return;
+      }
+
       const formData = new FormData();
       formData.append('audio', blob, 'audio.webm');
-      const sttRes = await fetch('/api/stt', { method: 'POST', body: formData });
+      const sttRes = await fetch('/api/stt', { 
+        method: 'POST', 
+        headers: { 'x-api-key': apiKey },
+        body: formData 
+      });
       const sttData = await sttRes.json();
       const userText = sttData.transcript;
 
@@ -212,7 +224,10 @@ export function ActiveSession({ selectedSet, onFinish }: Props) {
 
       const chatRes = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey
+        },
         body: JSON.stringify({
           message: `Question: "${currentQ.content}"\nUser Answer: "${userText}"`,
           mode: 'interview',

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Home, Mic, Layers, LayoutDashboard, PenTool } from 'lucide-react';
+import { Home, Mic, Layers, LayoutDashboard, PenTool, ClipboardList } from 'lucide-react';
 
 const menuItems = [
   { icon: Home, label: 'Home', href: '/' },
@@ -11,6 +11,7 @@ const menuItems = [
   { icon: Layers, label: 'Flashcards', href: '/decks' },
   { icon: PenTool, label: 'Writing', href: '/writing' },
   { icon: Mic, label: 'Interview', href: '/interview' },
+  { icon: ClipboardList, label: 'Quiz', href: '/quiz' },
 ];
 
 export function Sidebar() {

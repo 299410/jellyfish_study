@@ -59,7 +59,7 @@ export function EvaluationResult({ data, onRetry }: EvaluationResultProps) {
           </p>
           
           <div className="pt-2">
-            {data.errors.length === 0 ? (
+            {!data.errors || data.errors.length === 0 ? (
               <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-0 px-3 py-1">
                 <CheckCircle2 className="w-4 h-4 mr-1.5" /> Excellent! No errors found
               </Badge>
@@ -73,7 +73,7 @@ export function EvaluationResult({ data, onRetry }: EvaluationResultProps) {
       </div>
 
       {/* Errors List */}
-      {data.errors.length > 0 && (
+      {data.errors && data.errors.length > 0 && (
         <div className="space-y-4">
           <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
             <XCircle className="w-5 h-5 text-rose-500" /> Error Details
@@ -86,7 +86,7 @@ export function EvaluationResult({ data, onRetry }: EvaluationResultProps) {
                   <div className="bg-rose-50/50 p-4 border-b border-rose-100/50">
                     <p className="text-sm font-medium text-slate-500 mb-1">Original:</p>
                     <p className="text-slate-800 font-medium">
-                      {err.original_sentence.split(err.error_phrase).map((part, i, arr) => (
+                      {err.original_sentence?.split(err.error_phrase).map((part, i, arr) => (
                         <React.Fragment key={i}>
                           {part}
                           {i !== arr.length - 1 && (

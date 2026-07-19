@@ -3,7 +3,7 @@ import { GeminiProvider } from '@/lib/ai/adapter';
 
 export async function POST(req: NextRequest) {
   try {
-    const { topic, text } = await req.json();
+    const { text } = await req.json();
 
     if (!text || text.trim() === '') {
       return NextResponse.json({ error: 'Text is required' }, { status: 400 });
@@ -16,15 +16,15 @@ export async function POST(req: NextRequest) {
 
     const aiProvider = new GeminiProvider(apiKey);
     
-    // Evaluate writing
-    const evaluation = await aiProvider.evaluateWriting(topic || '', text);
+    // Parse quiz from text
+    const parsedData = await aiProvider.parseQuizFromText(text);
 
-    return NextResponse.json(evaluation);
+    return NextResponse.json(parsedData);
 
   } catch (error: any) {
-    console.error('Error evaluating writing:', error);
+    console.error('Error parsing quiz:', error);
     return NextResponse.json(
-      { error: error.message || 'Internal server error during evaluation' },
+      { error: error.message || 'Internal server error during parsing' },
       { status: 500 }
     );
   }

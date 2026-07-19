@@ -1,25 +1,54 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PenTool } from 'lucide-react';
 import { WritingEditor } from '@/components/features/writing/WritingEditor';
 import { EvaluationResult, EvaluationData } from '@/components/features/writing/EvaluationResult';
+import { QuestionSet } from '@/components/features/interview/QuestionSetList';
 
 export default function WritingPage() {
   const [evaluation, setEvaluation] = useState<EvaluationData | null>(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
+  const [questionSets, setQuestionSets] = useState<QuestionSet[]>([]);
+
+  useEffect(() => {
+    const fetchSets = async () => {
+      try {
+        const res = await fetch('/api/questionsets');
+        if (res.ok) {
+          const data = await res.json();
+          setQuestionSets(data);
+        }
+      } catch (error) {
+        console.error('Failed to load question sets:', error);
+      }
+    };
+    fetchSets();
+  }, []);
 
   const handleEvaluate = async (topic: string, text: string) => {
+    const apiKey = localStorage.getItem('user_gemini_api_key');
+    if (!apiKey) {
+      alert("Please configure your Gemini API Key in the Dashboard first.");
+      return;
+    }
+
     setIsEvaluating(true);
     try {
       const res = await fetch('/api/writing/evaluate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey 
+        },
         body: JSON.stringify({ topic, text }),
       });
 
       if (!res.ok) {
+        if (res.status === 401) {
+          throw new Error('Invalid or missing API Key. Please check your Dashboard settings.');
+        }
         throw new Error('Failed to evaluate writing');
       }
 
@@ -53,7 +82,7 @@ export default function WritingPage() {
             </div>
             <div>
               <span className="bg-gradient-to-r from-indigo-600 to-indigo-400 bg-clip-text text-transparent block">
-                JLPT Writing Practice
+                Writing Practice
               </span>
               <span className="text-sm font-medium text-slate-500 block mt-1">
                 AI Grammar Check (N5 - N3)
@@ -67,6 +96,7 @@ export default function WritingPage() {
             <WritingEditor 
               onEvaluate={handleEvaluate} 
               isEvaluating={isEvaluating} 
+              questionSets={questionSets}
             />
           ) : (
             <EvaluationResult 
