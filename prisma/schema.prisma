@@ -130,3 +130,31 @@ model StudySessionCard {
   @@index([sessionId, orderIndex])
 }
 
+model Quiz {
+  id          String         @id @default(uuid())
+  title       String
+  timeLimit   Int?           
+  questions   QuizQuestion[]
+  sessions    QuizSession[]
+  createdAt   DateTime       @default(now())
+}
+
+model QuizQuestion {
+  id            String   @id @default(uuid())
+  quizId        String
+  quiz          Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  content       String   
+  options       Json     
+  correctAnswer Int      
+}
+
+model QuizSession {
+  id         String   @id @default(uuid())
+  quizId     String
+  quiz       Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  score      Int      
+  total      Int      
+  timeSpent  Int      
+  createdAt  DateTime @default(now())
+}
+

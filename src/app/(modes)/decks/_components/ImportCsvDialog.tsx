@@ -117,7 +117,7 @@ export default function ImportCsvDialog({ decks, userId, onImported }: { decks: 
                 <div className="animate-in fade-in slide-in-from-top-2 duration-300">
                   <Label className="font-bold text-slate-700 mb-2 block">New Deck Name</Label>
                   <Input 
-                    placeholder="e.g., JLPT N3 Vocabulary"
+                    placeholder="e.g., Language Vocabulary"
                     value={newDeckName}
                     onChange={(e) => setNewDeckName(e.target.value)}
                     disabled={isSubmitting}

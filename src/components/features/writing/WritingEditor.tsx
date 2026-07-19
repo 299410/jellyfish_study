@@ -169,8 +169,8 @@ export function WritingEditor({ onEvaluate, isEvaluating, questionSets = [] }: W
           <Textarea 
             placeholder={
               mode === 'interview' 
-                ? (selectedQuestion ? "Gõ câu trả lời tiếng Nhật của bạn vào đây..." : "Hãy chọn 1 câu hỏi phỏng vấn ở trên trước...") 
-                : "Enter your Japanese text here..."
+                ? (selectedQuestion ? "Gõ câu trả lời của bạn vào đây..." : "Hãy chọn 1 câu hỏi phỏng vấn ở trên trước...") 
+                : "Gõ đoạn văn của bạn vào đây..."
             }
             value={text}
             onChange={(e) => setText(e.target.value)}
