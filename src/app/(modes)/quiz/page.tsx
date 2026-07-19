@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ClipboardList, Plus, Clock, FileQuestion, ChevronRight, BrainCircuit, Edit2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function QuizDashboardPage() {
+  const router = useRouter();
   const [quizzes, setQuizzes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,11 +29,11 @@ export default function QuizDashboardPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-br from-indigo-900 to-slate-800 bg-clip-text text-transparent mb-3">
-            JLPT Mock Tests
+            Language Quizzes
           </h1>
           <p className="text-slate-500 text-lg flex items-center gap-2">
             <BrainCircuit className="w-5 h-5 text-indigo-400" />
-            AI-powered JLPT mock tests
+            AI-powered language quizzes
           </p>
         </div>
         
@@ -67,46 +69,48 @@ export default function QuizDashboardPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {quizzes.map(quiz => (
-            <Link key={quiz.id} href={`/quiz/${quiz.id}/setup`}>
-              <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-indigo-100/50 hover:border-indigo-200 transition-all duration-300 group cursor-pointer h-full flex flex-col relative">
+            <div 
+              key={quiz.id} 
+              onClick={() => router.push(`/quiz/${quiz.id}/setup`)}
+              className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-indigo-100/50 hover:border-indigo-200 transition-all duration-300 group cursor-pointer h-full flex flex-col relative"
+            >
+              
+              <Link 
+                href={`/quiz/${quiz.id}/edit`} 
+                onClick={(e) => e.stopPropagation()}
+                className="absolute top-4 right-4 p-2 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100 z-10"
+              >
+                <Edit2 className="w-5 h-5" />
+              </Link>
+
+              <div className="flex-1 pr-8">
+                <h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:text-indigo-600 transition-colors line-clamp-2">
+                  {quiz.title}
+                </h3>
                 
-                <Link 
-                  href={`/quiz/${quiz.id}/edit`} 
-                  onClick={(e) => e.stopPropagation()}
-                  className="absolute top-4 right-4 p-2 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100 z-10"
-                >
-                  <Edit2 className="w-5 h-5" />
-                </Link>
-
-                <div className="flex-1 pr-8">
-                  <h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:text-indigo-600 transition-colors line-clamp-2">
-                    {quiz.title}
-                  </h3>
-                  
-                  <div className="flex flex-wrap gap-3 mt-4">
+                <div className="flex flex-wrap gap-3 mt-4">
+                  <div className="flex items-center gap-1.5 text-sm text-slate-500 bg-slate-50 px-2.5 py-1 rounded-lg">
+                    <FileQuestion className="w-4 h-4 text-slate-400" />
+                    <span className="font-medium">{quiz._count.questions} questions</span>
+                  </div>
+                  {quiz.timeLimit && (
                     <div className="flex items-center gap-1.5 text-sm text-slate-500 bg-slate-50 px-2.5 py-1 rounded-lg">
-                      <FileQuestion className="w-4 h-4 text-slate-400" />
-                      <span className="font-medium">{quiz._count.questions} questions</span>
+                      <Clock className="w-4 h-4 text-slate-400" />
+                      <span className="font-medium">{quiz.timeLimit} min</span>
                     </div>
-                    {quiz.timeLimit && (
-                      <div className="flex items-center gap-1.5 text-sm text-slate-500 bg-slate-50 px-2.5 py-1 rounded-lg">
-                        <Clock className="w-4 h-4 text-slate-400" />
-                        <span className="font-medium">{quiz.timeLimit} min</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="mt-6 pt-4 border-t border-slate-50 flex items-center justify-between text-sm">
-                  <span className="text-slate-400">
-                    {quiz._count.sessions} plays
-                  </span>
-                  <div className="flex items-center text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform">
-                    Take Test <ChevronRight className="w-4 h-4 ml-1" />
-                  </div>
+                  )}
                 </div>
               </div>
-            </Link>
+
+              <div className="mt-6 pt-4 border-t border-slate-50 flex items-center justify-between text-sm">
+                <span className="text-slate-400">
+                  {quiz._count.sessions} plays
+                </span>
+                <div className="flex items-center text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform">
+                  Take Test <ChevronRight className="w-4 h-4 ml-1" />
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       )}
