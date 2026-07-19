@@ -267,7 +267,7 @@ Hãy giải thích ngắn gọn (bằng tiếng Việt, tối đa 3 câu) tại 
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: {
         systemInstruction: 'Bạn là giáo viên chuyên luyện thi ngoại ngữ.',
-        generationConfig: { responseMimeType: 'application/json' }
+        responseMimeType: 'application/json'
       }
     });
 
