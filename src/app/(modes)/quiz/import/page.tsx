@@ -19,7 +19,7 @@ export default function QuizImportPage() {
   const [parseError, setParseError] = useState('');
 
   // Quiz State (for Review/Edit)
-  const [title, setTitle] = useState('New JLPT Quiz');
+  const [title, setTitle] = useState('New Language Quiz');
   const [timeLimit, setTimeLimit] = useState<number>(30);
   const [questions, setQuestions] = useState<any[]>([]);
   const [expandedId, setExpandedId] = useState<number | null>(0);
@@ -222,7 +222,7 @@ export default function QuizImportPage() {
 
             <textarea
               className="w-full h-96 p-4 rounded-2xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/20 transition-all outline-none resize-none font-mono text-sm"
-              placeholder="Example:&#10;Question 1: What is the capital of Japan?&#10;A. Kyoto&#10;B. Tokyo&#10;C. Osaka&#10;D. Hokkaido&#10;Answer: B"
+              placeholder="Example:&#10;Question 1: What is the capital of France?&#10;A. London&#10;B. Paris&#10;C. Berlin&#10;D. Madrid&#10;Answer: B"
               value={rawText}
               onChange={(e) => setRawText(e.target.value)}
             />
