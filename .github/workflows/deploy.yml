@@ -71,6 +71,9 @@ jobs:
             echo "📥 Kéo Docker Image mới nhất về..."
             docker pull $IMAGE
 
+            echo "🛠 Chạy Database Migration..."
+            docker run --rm --env-file /var/www/nihongo-reflex/.env $IMAGE npx prisma migrate deploy
+
             echo "🛑 Dừng và xóa Container cũ..."
             docker stop nihongo-reflex-app || true
             docker rm nihongo-reflex-app || true
