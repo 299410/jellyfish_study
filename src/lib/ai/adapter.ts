@@ -266,8 +266,7 @@ Hãy giải thích ngắn gọn (bằng tiếng Việt, tối đa 3 câu) tại 
       model: 'gemini-3.1-flash-lite',
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: {
-        systemInstruction: 'Bạn là giáo viên chuyên luyện thi ngoại ngữ.',
-        responseMimeType: 'application/json'
+        systemInstruction: 'Bạn là giáo viên chuyên luyện thi ngoại ngữ.'
       }
     });
 
