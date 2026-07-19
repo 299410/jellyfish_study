@@ -174,6 +174,65 @@ Bài viết: ${text}`;
   }
 
   /**
+   * Parse messy text into structured Quiz JSON
+   */
+  async parseQuizFromText(text: string): Promise<any> {
+    const systemInstruction = `Bạn là một chuyên gia phân tích dữ liệu giáo dục.
+Nhiệm vụ: Trích xuất các câu hỏi trắc nghiệm từ đoạn text hỗn độn do người dùng cung cấp.
+Bắt buộc trả về ĐÚNG định dạng JSON Schema sau, không thêm bất kỳ text nào khác:
+{
+  "questions": [
+    {
+      "content": "Nội dung câu hỏi",
+      "options": ["A. Lựa chọn 1", "B. Lựa chọn 2", "C. Lựa chọn 3", "D. Lựa chọn 4"],
+      "correctAnswer": 0 // Index (0 đến 3) của đáp án đúng
+    }
+  ]
+}
+Lưu ý: Nếu text không có đáp án đúng rõ ràng, hãy tự suy luận ra đáp án đúng nhất dựa trên kiến thức JLPT.`;
+
+    const response = await this.ai.models.generateContent({
+      model: 'gemini-3.1-flash-lite',
+      contents: [{ role: 'user', parts: [{ text: text }] }],
+      config: {
+        systemInstruction: systemInstruction,
+        responseMimeType: 'application/json',
+      }
+    });
+
+    try {
+      return JSON.parse(response.text || '{"questions":[]}');
+    } catch (e) {
+      console.error('Failed to parse AI response to JSON for Quiz', e);
+      return { questions: [] };
+    }
+  }
+
+  /**
+   * Explain why a user's answer is wrong
+   */
+  async explainQuizAnswer(questionContent: string, options: string[], wrongAnswerIndex: number, correctAnswerIndex: number): Promise<string> {
+    const wrongAnswer = options[wrongAnswerIndex];
+    const correctAnswer = options[correctAnswerIndex];
+
+    const prompt = `Câu hỏi: ${questionContent}
+Đáp án học viên chọn (SAI): ${wrongAnswer}
+Đáp án đúng chuẩn: ${correctAnswer}
+
+Hãy giải thích ngắn gọn (bằng tiếng Việt, tối đa 3 câu) tại sao đáp án học viên chọn lại sai và tại sao đáp án kia mới đúng. Giọng điệu như một thầy giáo tận tâm.`;
+
+    const response = await this.ai.models.generateContent({
+      model: 'gemini-3.1-flash-lite',
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      config: {
+        systemInstruction: 'Bạn là thầy giáo tiếng Nhật chuyên luyện thi JLPT.',
+      }
+    });
+
+    return response.text || 'Lỗi: Không thể tải lời giải thích.';
+  }
+
+  /**
    * Text to Speech
    */
   async textToSpeech(text: string): Promise<string | ArrayBuffer> {
