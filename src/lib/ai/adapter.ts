@@ -71,7 +71,8 @@ TRẢ VỀ ĐÚNG ĐỊNH DẠNG SAU, KHÔNG DÙNG JSON:
 === CÂU SỬA LỖI ===
 [Chỉ ra các lỗi sai nếu có, định dạng: Sai: "..." -> Đúng: "..." (Lý do: ...)]
 === CÂU TRẢ LỜI MẪU ===
-[Câu trả lời mẫu chuẩn xác và tự nhiên]
+Câu mẫu: [Câu trả lời mẫu bằng ngoại ngữ mục tiêu, chuẩn xác và tự nhiên]
+Dịch nghĩa: [Dịch nghĩa câu mẫu sang tiếng Việt]
 === MẸO CỦA THẦY CÔ ===
 [Một mẹo nhỏ về từ vựng, ngữ pháp hoặc văn hóa giao tiếp]`;
     } else {

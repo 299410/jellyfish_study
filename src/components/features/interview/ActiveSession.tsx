@@ -402,14 +402,20 @@ export function ActiveSession({ selectedSet, onFinish }: Props) {
             <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Suggested Japanese</p>
             <div className="bg-slate-50/70 border border-slate-100 rounded-2xl p-4 flex items-center justify-between gap-4">
               <div className="space-y-1">
-                {sampleDetails.mau && (
+                {sampleDetails.mau ? (
+                  <>
+                    <p className="font-black text-indigo-950 text-base font-mono tracking-wide leading-relaxed">
+                      {sampleDetails.mau}
+                    </p>
+                    {sampleDetails.dich && (
+                      <p className="text-xs text-slate-400 font-bold italic">
+                        {sampleDetails.dich}
+                      </p>
+                    )}
+                  </>
+                ) : (
                   <p className="font-black text-indigo-950 text-base font-mono tracking-wide leading-relaxed">
-                    {sampleDetails.mau}
-                  </p>
-                )}
-                {sampleDetails.dich && (
-                  <p className="text-xs text-slate-400 font-bold italic">
-                    {sampleDetails.dich}
+                    {parsed.sampleAnswer}
                   </p>
                 )}
               </div>
