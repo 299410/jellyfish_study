@@ -25,7 +25,7 @@ export default async function HomePage() {
   }
 
   return (
-    <main className="min-h-screen text-white overflow-hidden font-sans relative bg-transparent">
+    <main className="h-screen w-screen fixed inset-0 text-white overflow-hidden font-sans bg-transparent">
       {!user && <LoginModal />}
       
       <div className={`relative z-10 w-full h-screen flex flex-col p-6 transition-all duration-500 ${!user ? 'blur-md pointer-events-none' : 'pointer-events-none'}`}>

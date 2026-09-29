@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Play, Pause, RotateCcw, Plus, Bomb, CheckCircle2, Circle, Palette, GripHorizontal, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -110,10 +110,12 @@ export default function WorkspaceClient({ initialNotes, initialTasks, userId }: 
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
+  const constraintsRef = useRef(null);
+
   if (!mounted) return null;
 
   return (
-    <div className="relative w-full h-[calc(100vh-100px)]">
+    <div ref={constraintsRef} className="relative w-full h-full">
       
       {/* Background Switcher */}
       <div className="absolute bottom-6 right-6 z-50">
@@ -129,6 +131,7 @@ export default function WorkspaceClient({ initialNotes, initialTasks, userId }: 
       {/* 1. Pomodoro Widget */}
       <motion.div 
         drag 
+        dragConstraints={constraintsRef}
         dragMomentum={false}
         initial={{ x: 50, y: 50 }}
         className="absolute z-10 w-[320px] cursor-move"
@@ -208,6 +211,7 @@ export default function WorkspaceClient({ initialNotes, initialTasks, userId }: 
       {/* 2. To-do List Widget */}
       <motion.div 
         drag 
+        dragConstraints={constraintsRef}
         dragMomentum={false}
         initial={{ x: typeof window !== 'undefined' && window.innerWidth > 768 ? window.innerWidth - 400 : 50, y: 50 }}
         className="absolute z-20 w-[350px] cursor-move"
@@ -274,6 +278,7 @@ export default function WorkspaceClient({ initialNotes, initialTasks, userId }: 
       {showMusicWidget && (
         <motion.div 
           drag 
+          dragConstraints={constraintsRef}
           dragMomentum={false}
           initial={{ x: 50, y: 450 }}
           className="absolute z-10 w-[320px] cursor-move"
@@ -290,6 +295,7 @@ export default function WorkspaceClient({ initialNotes, initialTasks, userId }: 
       {/* 4. Sticky Note Widget */}
       <motion.div 
         drag 
+        dragConstraints={constraintsRef}
         dragMomentum={false}
         initial={{ x: typeof window !== 'undefined' && window.innerWidth > 768 ? window.innerWidth - 350 : 500, y: 500 }}
         className="absolute z-30 w-[280px] cursor-move"
