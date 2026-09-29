@@ -44,10 +44,39 @@ model SessionResult {
 
 model User {
   id            String         @id @default(uuid())
-  name          String
+  name          String         @unique
+  pin           String
+  
+  currentStreak Int            @default(0)
+  longestStreak Int            @default(0)
+  lastActiveAt  DateTime?
+
   decks         Deck[]
   studySessions StudySession[]
+  notes         StickyNote[]
+  tasks         StudyTask[]
+  
   createdAt     DateTime       @default(now())
+}
+
+model StickyNote {
+  id        String   @id @default(uuid())
+  userId    String
+  content   String
+  color     String   @default("yellow")
+  posX      Int      @default(0)
+  posY      Int      @default(0)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model StudyTask {
+  id          String   @id @default(uuid())
+  userId      String
+  title       String
+  isCompleted Boolean  @default(false)
+  date        DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Deck {

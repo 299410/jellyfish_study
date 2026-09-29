@@ -42,7 +42,11 @@ export default function LandingCTA({ variant }: LandingCTAProps) {
         >
           Get Started
         </button>
-        <OnboardingModal isOpen={isOpen} onClose={() => setIsOpen(false)} onSuccess={handleSuccess} />
+        <OnboardingModal
+          isOpen={isOpen}
+          onClose={() => setIsOpen(false)}
+          onSuccess={handleSuccess}
+        />
       </>
     );
   }
@@ -55,7 +59,11 @@ export default function LandingCTA({ variant }: LandingCTAProps) {
       >
         Get Started <ArrowRight className="w-5 h-5" />
       </button>
-      <OnboardingModal isOpen={isOpen} onClose={() => setIsOpen(false)} onSuccess={handleSuccess} />
+      <OnboardingModal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        onSuccess={handleSuccess}
+      />
     </>
   );
 }
